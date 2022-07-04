@@ -26,8 +26,7 @@ client.on('messageCreate', message => {
                 res += hands[parseInt(Math.random() * hands.length)];
             }
             message.delete();
-            message.channel.send(res)
-            
+            message.channel.send(res);         
     }
 });
 
