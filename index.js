@@ -8,13 +8,13 @@ client.on('messageCreate', (message) => {
     if (message.content === "ping") {
         message.channel.send("pong");
     }
-})
+});
 
 client.on('messageCreate', message => {
     if (message.content.startsWith(`${prefix}say`) && !message.author.bot) {
         message.delete();
         if (message.content.length > 5) message.channel.send(message.content.substring(5,message.content.length));
     }
-})
+});
 
 client.login(token);
