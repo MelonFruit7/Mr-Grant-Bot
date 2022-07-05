@@ -31,7 +31,7 @@ client.on('messageCreate', message => {
                          ":raised_hands", ":point_left", ":point_right", ":point_up_2", ":point_up", ":writing_hand"];
             let res = "";
             for (let i = 0; i < numHands; i++) {
-                res += hands[parseInt(Math.random() * hands.length)] + `_tone${parseInt((Math.random() * 5) + 1)}:`;
+                res += hands[parseInt(Math.random() * hands.length)] + (Math.random() > 0.5) ? "" : `_tone${parseInt((Math.random() * 5) + 1)}:`;
             }
             message.delete();
             console.log(message.author.username + " used the hands command");
