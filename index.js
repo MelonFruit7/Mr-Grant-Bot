@@ -26,7 +26,7 @@ client.on('messageCreate', message => {
             let numHands = 10;
             if (message.content.length > 6) {
                 try {
-                  numHands = parseInt(message.content.substring(7)) <= 100 ? parseInt(message.content.substring(7)) : 10;
+                  numHands = parseInt(message.content.substring(7)) <= 100 && parseInt(message.content.substring(7)) > 0 ? parseInt(message.content.substring(7)) : 10;
                 } catch(error) {
                   process.stdout.write("hands error");
                 }
@@ -59,10 +59,27 @@ client.on('messageCreate', message => {
             if (message.content.length > 8) {
                 request('https://api.dictionaryapi.dev/api/v2/entries/en/' + message.content.substring(8), function (error, response, body) {
                  if (!error && response.statusCode == 200) {
-                    var importedJSON = JSON.parse(body);
+                    let importedJSON = JSON.parse(body);
                     message.channel.send(importedJSON[0].meanings[0].definitions[0].definition);
                  } else {
                     message.channel.send("Sorry couldn't find your word");
+                 }
+                });
+            }
+        break;
+        //Urabn Define a word
+        case `${prefix}udefine`:
+            if (message.content.length > 9) {
+                request('https://api.urbandictionary.com/v0/define?term=' + message.content.substring(9), (error,response,body) => {
+                  if (JSON.parse(body).list[0] == null) {
+                     message.channel.send("Sorry couldn't find your word");
+                     return;
+                  }
+                 if (!error && response.statusCode == 200) {
+                    let importedJSON = JSON.parse(body);
+                    message.channel.send(importedJSON.list[0].definition);
+                 } else {
+                    message.channel.send("Sorry an Error has occured");
                  }
                 });
             }
