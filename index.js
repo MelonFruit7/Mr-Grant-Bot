@@ -42,7 +42,7 @@ client.on('messageCreate', message => {
             let numHands = 10;
             if (message.content.indexOf(" ") != -1) {
                 try {
-                  numHands = parseInt(message.content.substring(7)) <= 100 && parseInt(message.content.substring(message.content.indexOf(" ") + 1)) > 0 ? parseInt(message.content.substring(message.content.indexOf(" ") + 1)) : 10;
+                  numHands = parseInt(message.content.substring(message.content.indexOf(" ") + 1)) <= 100 && parseInt(message.content.substring(message.content.indexOf(" ") + 1)) > 0 ? parseInt(message.content.substring(message.content.indexOf(" ") + 1)) : 10;
                 } catch(error) {
                   process.stdout.write("hands error");
                 }
@@ -108,7 +108,7 @@ client.on('messageCreate', message => {
         case `${prefix}guess`:
             message.channel.send("Guess a number between 1 - 5");
             let answer = parseInt(Math.random() * 5) + 1;
-            
+
             let msg_filter = (m) => m.author.id === message.author.id;
             message.channel.awaitMessages({filter: msg_filter, time: 5000, max: 1}).then(x => {
                 let msg = x.first();
