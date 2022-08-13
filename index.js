@@ -31,7 +31,7 @@ client.on('messageCreate', message => {
         //SAY COMMAND
         case `${prefix}say`:
                 message.delete();
-                if (message.content.indexOf(" ") != -1) message.channel.send(message.content.substring(message.content.substring(message.content.indexOf(" ") + 1)));
+                if (message.content.indexOf(" ") != -1) message.channel.send(message.content.substring(message.content.indexOf(" ") + 1));
         break;
         //PING COMMAND
         case `${prefix}ping`:
@@ -106,9 +106,25 @@ client.on('messageCreate', message => {
             }
         break;
         case `${prefix}guess`:
-            message.reply("Guess a number between 1 - 1000");
-            let answer = parseInt(Math.random() * 1000) + 1;
-            guessCommand(answer, message, 4000);
+            con.query("SELECT * FROM points WHERE user = " + message.author.id, function(err, result) {
+                if (err) throw err;
+                if (result.length > 0) {
+                    if (result[0].playing == 0) {
+                       con.query("UPDATE points SET playing = 1 WHERE user = " + message.author.id, function(err, result) { if (err) throw err});
+                       message.reply("Guess a number between 1 - 1000");
+                       let answer = parseInt(Math.random() * 1000) + 1;
+                       guessCommand(answer, message, 4000);
+
+                    } else {
+                        message.reply("You are currently playing");
+                    }
+                } else {
+                    con.query("INSERT INTO points (user, points, playing) VALUES (" + message.author.id + ", 0, 1)", function (err, result) { if (err) throw err; });
+                    message.reply("Guess a number between 1 - 1000");
+                    let answer = parseInt(Math.random() * 1000) + 1;
+                    guessCommand(answer, message, 4000);
+                }
+            });
         break;
         case `${prefix}points`:
             if (message.content.indexOf(" ") != -1) {
@@ -130,9 +146,19 @@ client.on('messageCreate', message => {
 });
 
 function guessCommand(answer, message, points) {
+    if (points == 0) {
+        con.query("UPDATE points SET playing = 0 WHERE user = " + message.author.id, function(err, result) { if (err) throw err});
+        message.reply("You took too many guesses no points for you, the answer was " + answer);
+        return;
+    }
     let msg_filter = (m) => m.author.id === message.author.id;
     message.channel.awaitMessages({filter: msg_filter, time: 10000, max: 1}).then(x => {
         let msg = x.first();
+        if (String(parseInt(msg.content)) == "NaN") {
+            guessCommand(answer, message, parseInt(points / 2));
+            message.reply("Numbers Only :(");
+            return;
+        }
               if (!(parseInt(msg.content) == answer)) {
                   if (parseInt(msg.content) > answer) {
                     msg.reply("Guess Lower");
@@ -145,23 +171,18 @@ function guessCommand(answer, message, points) {
 
               con.query("SELECT * FROM points WHERE user = " + message.author.id, function (err, result) {
                 if (err) throw err;
-                if (result.length == 0) {
-                    con.query("INSERT INTO points (user, points) VALUES (" + message.author.id + ", 1)", function (err, result) {
-                        if (err) throw err;
-                        message.reply("Congrats you earned your first point");
-                    });
-                } else {
                     let currentPoints = parseInt(result[0].points);
                     con.query("UPDATE points SET points = " + (currentPoints + points) + " WHERE user = " + message.author.id, function(err, result) {
                         if (err) throw err;
                         message.reply("Congrats you gained " + points + " points, you now have " + (currentPoints + points) + " points");
                     });
-                }
               });
 
+              con.query("UPDATE points SET playing = 0 WHERE user = " + message.author.id, function(err, result) { if (err) throw err});
               return msg.channel.send(`Congrats, ${msg.author}! You Guessed The Number Correctly! It Was ${answer}`);
     }).catch(() => {
-        message.channel.send("L Bozo you ran out of time");
+        con.query("UPDATE points SET playing = 0 WHERE user = " + message.author.id, function(err, result) { if (err) throw err});
+        message.reply("L Bozo you ran out of time");
     });
 }
 
