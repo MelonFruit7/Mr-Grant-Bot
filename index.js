@@ -8,17 +8,37 @@ const request = require('request');
 //MYSQL login
 const mysql = require('mysql');
 
-var con = mysql.createConnection({
+var db_info = {
   host: "localhost",
   user: "root",
   password: "%Melon123%", //Not a secret :)
   database: "sys"
-});
+};
+var con;
 
-con.connect(function(err) {
-    if (err) throw err;
-    console.log("Connected!");
-})
+function handleDisconnect() {
+    con = mysql.createConnection(db_info); 
+                                                   
+  
+    con.connect(function(err) {              
+      if(err) {                                
+        console.log("error when connecting to db");
+        setTimeout(handleDisconnect, 2000); 
+      } else {
+        console.log("Connected!");
+      }                                     
+    });                                     
+                                           
+    con.on('error', function(err) {
+      console.log('db error', err);
+      if(err.code === 'PROTOCOL_CONNECTION_LOST') { 
+        handleDisconnect();                         
+      } else {                                      
+        throw err;                                  
+      }
+    });
+  }
+handleDisconnect();
 //MYSQL login
 
 
