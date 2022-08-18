@@ -163,9 +163,9 @@ client.on('messageCreate', message => {
                 });
             }
         break;
-        case `${prefix}gameOfWinners`:
+        case `${prefix}roulette`:
         if (!gameMap.has(String(message.guild.id))) {
-            message.channel.send({embeds: [new Discord.MessageEmbed().setTitle("**Game Of Winners**")]}).then(msg => {
+            message.channel.send({embeds: [new Discord.MessageEmbed().setTitle("**Roulette**")]}).then(msg => {
                     gameMap.set(String(message.guild.id), {botMsgId: String(msg.id), arr: [message.author], embedString: ""});
                     msg.react('✅'); 
             }).catch();
@@ -178,19 +178,25 @@ client.on('messageCreate', message => {
                         let survivor = gameMap.get(guildId).arr.splice(parseInt(Math.random() * gameMap.get(guildId).arr.length), 1);
                         let embed = new Discord.MessageEmbed();
 
-                        embed.setTitle("**Game Of Winners**");
+                        embed.setTitle("**Roulette**");
                         gameMap.get(guildId).embedString = "";
                         gameMap.get(guildId).embedString += "**This Rounds Survivor 🙂** \n" + survivor + "\n\n" + "**" + gameMap.get(guildId).arr.length + " Remaining**\n\n";
                         for(let i = 0; i < gameMap.get(guildId).arr.length; i++) {
                             gameMap.get(guildId).embedString += `${gameMap.get(guildId).arr[i]}\n`;
                         }
                         embed.setDescription(gameMap.get(guildId).embedString);
+                        embed.setFooter({
+                            text: "⌛ Next Round Starts In 5 Seconds"
+                        });
                         embed.setColor('PURPLE');
-                        message.channel.send({embeds: [embed]});
+                        message.channel.send({embeds: [embed]}).then(msg => {
+                            setTimeout(() => {msg.delete()}, 4000);
+                        }).catch();
                     } else {
-                        let embed = new Discord.MessageEmbed().setTitle("Game Of Winners")
+                        let embed = new Discord.MessageEmbed().setTitle("L + ratio + luck issue")
                                                               .setDescription(`🤡 ${gameMap.get(guildId).arr[0]} 🤡`)
-                                                              .setThumbnail(`https://cdn.discordapp.com/avatars/${gameMap.get(guildId).arr[0].id}/${gameMap.get(guildId).arr[0].avatar}.png?size=256`);
+                                                              .setThumbnail(`https://cdn.discordapp.com/avatars/${gameMap.get(guildId).arr[0].id}/${gameMap.get(guildId).arr[0].avatar}.png?size=256`)
+                                                              .setColor('RED');
 
                         message.channel.send({embeds: [embed]}).then(() => {
                             clearInterval(gameInterval);
@@ -198,7 +204,7 @@ client.on('messageCreate', message => {
                         }).catch();
                     }
                 }, 5000);
-            }, 45000);
+            }, 30000);
         } else {
             message.channel.send("A Game is Currently In progress");
         }
@@ -218,13 +224,13 @@ client.on('messageReactionAdd', (reaction, user) => {
     if (!user.bot) gameMap.get(guildId).arr.push(user);
 
     let embed = new Discord.MessageEmbed();
-    embed.setTitle("**Game Of Winners**");
+    embed.setTitle("**Roulette**");
     for (let i = 0; i < gameMap.get(guildId).arr.length; i++) {
         gameMap.get(guildId).embedString += `${gameMap.get(guildId).arr[i]}\n`;
     }
     embed.setDescription(gameMap.get(guildId).embedString);
     embed.setFooter({
-        text: "Game starts in 45 seconds"
+        text: "Game starts in 30 seconds"
     });
     embed.setColor('PURPLE');
     reaction.message.edit({embeds: [embed]});
