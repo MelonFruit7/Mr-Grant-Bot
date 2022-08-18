@@ -51,7 +51,7 @@ client.on('messageCreate', message => {
         //SAY COMMAND
         case `${prefix}say`:
                 message.delete();
-                if (message.content.indexOf(" ") != -1) message.channel.send(message.content.substring(message.content.indexOf(" ") + 1));
+                if (message.content.indexOf(" ") != -1 && message.member.permissions.has(['ADMINISTRATOR'])) message.channel.send(message.content.substring(message.content.indexOf(" ") + 1));
         break;
         //PING COMMAND
         case `${prefix}ping`:
