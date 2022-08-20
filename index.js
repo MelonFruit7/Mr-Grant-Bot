@@ -49,13 +49,23 @@ client.on('messageCreate', message => {
     //Gets the command and puts it trhough a switch
     switch(message.content.substring(0,message.content.indexOf(" ") == -1 ? message.content.length : message.content.indexOf(" "))) {
         //SAY COMMAND
+        case `${prefix}commands`:
+            let embed = new Discord.MessageEmbed();
+            embed.setTitle("**Commands**");
+            embed.setDescription("```*say {word}\n*ping\n*hands\n*numToWord {num}\n*define {word}\n*udefine {word}\n*cbowl {minutes}\n*guess\n*points\n*roulette\n*rps {points}```");
+            message.channel.send({embeds: [embed]});
+        break;
         case `${prefix}say`:
                 message.delete();
-                if (message.content.indexOf(" ") != -1 && message.member.permissions.has(['ADMINISTRATOR'])) message.channel.send(message.content.substring(message.content.indexOf(" ") + 1));
+                if (message.content.indexOf(" ") != -1 && message.member.permissions.has(['ADMINISTRATOR'])) {
+                    message.channel.send(message.content.substring(message.content.indexOf(" ") + 1));
+                } else {
+                    message.reply("Need Admin To Use");
+                }
         break;
         //PING COMMAND
         case `${prefix}ping`:
-             message.channel.send("pong");
+             message.channel.send(`🏓Pong! \n Latency is ${Date.now() - message.createdTimestamp}ms. \n API Latency is ${Math.round(client.ws.ping)}ms`);
         break;
         //HANDS COMMAND
         case `${prefix}hands`:
@@ -130,7 +140,7 @@ client.on('messageCreate', message => {
                 if (err) throw err;
                 if (result.length > 0) {
                     if (result[0].playing == 0) {
-                       con.query("UPDATE points SET playing = 1 WHERE user = " + message.author.id, function(err, result) { if (err) throw err});
+                       setPlayingGame(message.author.id, 1);
                        message.reply("Guess a number between 1 - 1000");
                        let answer = parseInt(Math.random() * 1000) + 1;
                        guessCommand(answer, message, 4000);
@@ -154,12 +164,20 @@ client.on('messageCreate', message => {
                 }
                 con.query("SELECT * FROM points WHERE user = " + message.mentions.users.first().id, function(err, result) {
                     if (err) throw err;
-                    if (result.length > 0) message.reply(`${message.mentions.users.first()} has ${result[0].points} points`);
+                    if (result.length > 0) {
+                        message.reply(`${message.mentions.users.first()} has ${result[0].points} points`);
+                    } else {
+                        message.reply("This user does not have any points");
+                    }
                 });
             } else {
                 con.query("SELECT * FROM points WHERE user = " + message.author.id, function(err, result) {
                     if (err) throw err;
-                    if (result.length > 0) message.reply(`You have ${result[0].points} points`);
+                    if (result.length > 0) {
+                        message.reply(`You have ${result[0].points} points`);
+                    } else {
+                        message.reply("You don't have any points");
+                    }
                 });
             }
         break;
@@ -208,6 +226,79 @@ client.on('messageCreate', message => {
         } else {
             message.channel.send("A Game is Currently In progress");
         }
+        break;
+        case `${prefix}rps`:
+         let rpsArr = ["🗿", "📄", "✂️"];
+         if (message.content.indexOf(" ") != -1) {
+            let bet = parseInt(message.content.substring(message.content.indexOf(" ") + 1));
+            if (message.content.substring(message.content.indexOf(" ") + 1) == "half") bet = -1337;
+            if (!isNaN(bet)) {
+              con.query("SELECT * FROM points WHERE user = " + message.author.id, (err, result) => {
+                if (err) throw err;
+                if (result.length > 0) {
+                    if (result[0].playing == 1) {
+                        message.reply("You are currently playing a game");
+                        return;
+                    }
+                    if (bet == -1337) bet = parseInt(result[0].points / 2);
+                    setPlayingGame(message.author.id, 1);
+                    if (bet > result[0].points / 2 || bet <= 0) {
+                        setPlayingGame(message.author.id, 0);
+                        message.reply("Can't bet more than half of your points (or 0 points)");
+                        return;
+                    }
+                    let embed = new Discord.MessageEmbed(); 
+                    embed.setTitle("**Rock 🗿, Paper 📄, Scissors✂️**");
+                    embed.setDescription("Wager: "+bet+" points\nPoints:```js\n"+(result[0].points - bet)+"```");
+                    message.channel.send({embeds: [embed]}).then(msg => {
+                        msg.react("🗿");
+                        msg.react("📄");
+                        msg.react("✂️");
+                        let filter = (reaction, user) => {
+                            return (reaction.emoji.name == "🗿" || reaction.emoji.name == "📄" || reaction.emoji.name == "✂️")
+                            && user.id == message.author.id;
+                        }
+                        msg.awaitReactions({filter, max: 1, time: 15000, errors: ["time"]}).then(x => {
+                            let rpsAnswer = parseInt(Math.random() * 3);
+                            let yourAnswer = null;
+                            switch(String(x.first().emoji)) {
+                                case "🗿": yourAnswer = 0;
+                                break;
+                                case "📄": yourAnswer = 1;
+                                break;
+                                case "✂️": yourAnswer = 2;
+                            }
+                            //Tie
+                            if (yourAnswer === rpsAnswer) {
+                            embed.setDescription("Wager: "+bet+" points\nPoints:```js\n"+(result[0].points)+"```\n**It's a Tie!**\n"+rpsArr[yourAnswer]+" vs " + rpsArr[rpsAnswer]);
+                            msg.edit({embeds: [embed]});
+                            //Bot Wins
+                            } else if (yourAnswer === (rpsAnswer - 1 < 0 ? 2 : rpsAnswer - 1)) {
+                            con.query("UPDATE points SET points = " + (result[0].points - bet) + " WHERE user = " + message.author.id, (err, result) => { if (err) throw err });
+                            embed.setDescription("Wager: "+bet+" points\nPoints:```js\n"+(result[0].points - bet)+"```\n**You Lost!**\n"+rpsArr[yourAnswer]+" vs " + rpsArr[rpsAnswer]);
+                            msg.edit({embeds: [embed]});
+                            //You Win
+                            } else if(rpsAnswer === (yourAnswer - 1 < 0 ? 2 : yourAnswer - 1)) {
+                            con.query("UPDATE points SET points = " + (result[0].points + bet) + " WHERE user = " + message.author.id, (err, result) => { if (err) throw err });
+                            embed.setDescription("Wager: "+bet+" points\nPoints:```js\n"+(result[0].points + bet)+"```\n**You Won!**\n"+rpsArr[yourAnswer]+" vs " + rpsArr[rpsAnswer]);
+                            msg.edit({embeds: [embed]});
+                            }
+                            setPlayingGame(message.author.id, 0);
+                        }).catch(() => {
+                            setPlayingGame(message.author.id, 0);
+                            message.reply("Bro can't even play rock paper scissors (you ran out of time)");
+                        });
+                    });
+                } else {
+                    message.reply("You don't have points");
+                }
+              });
+            } else {
+                message.reply("Ayo no");
+            }
+         } else {
+            message.reply("Bet some of your points");
+         }
     }
 });
 
@@ -240,7 +331,7 @@ client.on('messageReactionAdd', (reaction, user) => {
 
 function guessCommand(answer, message, points) {
     if (points == 0) {
-        con.query("UPDATE points SET playing = 0 WHERE user = " + message.author.id, function(err, result) { if (err) throw err});
+        setPlayingGame(message.author.id, 0);
         message.reply("You took too many guesses no points for you, the answer was " + answer);
         return;
     }
@@ -249,7 +340,7 @@ function guessCommand(answer, message, points) {
         let msg = x.first();
         if (String(parseInt(msg.content)) == "NaN") {
             guessCommand(answer, message, parseInt(points / 2));
-            message.reply("Numbers Only :(");
+            msg.reply("Numbers Only :(");
             return;
         }
               if (!(parseInt(msg.content) == answer)) {
@@ -271,10 +362,10 @@ function guessCommand(answer, message, points) {
                     });
               });
 
-              con.query("UPDATE points SET playing = 0 WHERE user = " + message.author.id, function(err, result) { if (err) throw err});
+              setPlayingGame(message.author.id, 0);
               return msg.channel.send(`Congrats, ${msg.author}! You Guessed The Number Correctly! It Was ${answer}`);
     }).catch(() => {
-        con.query("UPDATE points SET playing = 0 WHERE user = " + message.author.id, function(err, result) { if (err) throw err});
+        setPlayingGame(message.author.id, 0);
         message.reply("L Bozo you ran out of time");
     });
 }
@@ -289,6 +380,12 @@ function numberNotation(number) {
       number /= Math.pow(1000, findNumber);
       number = Math.round(number * 100) / 100;
       return number + abrevation[findNumber];
+}
+
+function setPlayingGame(id, set) {
+    con.query("UPDATE points SET playing = "+set+" WHERE user = " + id, (err, result) => {
+        if (err) throw err;
+    });
 }
 
 
