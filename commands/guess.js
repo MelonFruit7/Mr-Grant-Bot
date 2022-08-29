@@ -1,3 +1,6 @@
+const {numWord} = require("./numToWord.js");
+const {pointsSymbol, pointsImage} = require("./points.js");
+
 module.exports = {
     name: "guess",
     description: "guessing game",
@@ -53,7 +56,7 @@ function guessCommand(answer, message, points, con) {
                     let currentPoints = parseInt(result[0].points);
                     con.query("UPDATE points SET points = " + (currentPoints + points) + " WHERE user = " + message.author.id, function(err, result) {
                         if (err) throw err;
-                        message.reply("Congrats you gained " + points + " points, you now have " + (currentPoints + points) + " points").catch(error => console.log("Error replying to message (guess command)"));
+                        message.reply("Congrats you gained " + points + " "+pointsSymbol()+", you now have " + numWord(currentPoints + points) + " "+pointsSymbol()+"").catch(error => console.log("Error replying to message (guess command)"));
                     });
               });
 

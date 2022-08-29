@@ -7,6 +7,9 @@ module.exports = {
             embed.setDescription(numberNotation(parseInt(message.content.substring(message.content.indexOf(" ") + 1))));
             message.channel.send({embeds: [embed]});
         }
+    },
+    numWord(number) {
+        return numberNotation(number);
     }
 }
 

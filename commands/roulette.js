@@ -5,7 +5,6 @@ module.exports = {
     exe(message, Discord) {
         if (!gameMap.has(String(message.guild.id))) {
             message.channel.send({embeds: [new Discord.MessageEmbed().setTitle("**Roulette**")]}).then(msg => {
-                msg.delete();
                     gameMap.set(String(message.guild.id), {botMsgId: String(msg.id), arr: [message.author], embedString: ""});
                     msg.react('✅').catch(error => console.log("error adding reaction to message (roulette command)")); 
             }).catch();

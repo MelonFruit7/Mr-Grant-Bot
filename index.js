@@ -62,10 +62,19 @@ client.on('messageCreate', message => {
 
     //Gets the command and puts it trhough a switch
     switch(message.content.substring(0,message.content.indexOf(" ") == -1 ? message.content.length : message.content.indexOf(" "))) {
-        //SAY COMMAND
+        case `${prefix}stats`:
+            let colors = ['RED', 'BLUE', 'PURPLE', 'GREEN', 'YELLOW', 'ORANGE'];
+            let embed = new Discord.MessageEmbed()
+            .setTitle(`<:dice5:1013282200604647457> Grant Bot`)
+            .setDescription(`**Guilds**\n${client.guilds.cache.size}`)
+            .setColor(colors[parseInt(Math.random() * colors.length)])
+            .setFooter({text: `Developed by MelonFruit#8222`});
+{            message.channel.send({embeds: [embed]});
+}        break;
         case `${prefix}commands`:
             client.commands.get("commands").exe(message, Discord);
         break;
+        //SAY COMMAND
         case `${prefix}say`:
             client.commands.get("say").exe(message);
         break;
@@ -90,20 +99,35 @@ client.on('messageCreate', message => {
         case `${prefix}udefine`:
             client.commands.get("udefine").exe(message, request);
         break;
+        //Cbowl
         case `${prefix}cbowl`:
             client.commands.get("cbowl").exe(message);
         break;
+        //guess a number
         case `${prefix}guess`:
             client.commands.get("guess").exe(message, con);
         break;
+        //check your points
         case `${prefix}points`:
             client.commands.get("points").exe(message, con);
         break;
+        //Multipalyer roulette
         case `${prefix}roulette`:
             client.commands.get("roulette").exe(message, Discord);
         break;
+        //Rock Paper Scissors
         case `${prefix}rps`:
-         client.commands.get("rps").exe(message, Discord, con);
+            client.commands.get("rps").exe(message, Discord, con);
+        break;
+        //Dice Command
+        case `${prefix}dice`:
+            client.commands.get("dice").exe(message, Discord, con);
+        break;
+        //coinflip command
+        case `${prefix}coinflip`:
+        case `${prefix}cf`:
+            client.commands.get("coinflip").exe(message, Discord, con);
+        break;
     }
 });
 
