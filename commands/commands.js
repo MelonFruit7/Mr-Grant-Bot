@@ -4,7 +4,7 @@ module.exports = {
     exe(message, Discord) {
         let embed = new Discord.MessageEmbed();
         embed.setTitle("**Commands**");
-        embed.setDescription("```*say {word}\n*ping\n*hands\n*numToWord {num}\n*define {word}\n*udefine {word}\n*cbowl {minutes}\n*guess\n*points\n*roulette\n*rps {points}```");
+        embed.setDescription("```*say {word}\n*ping\n*hands\n*numToWord {num}\n*define {word}\n*udefine {word}\n*cbowl {minutes}\n*guess\n*points\n*roulette\n*rps {points}\n*dice {points}\n*cf {side} {points}\n*stats```");
         message.channel.send({embeds: [embed]});  
     }
 }

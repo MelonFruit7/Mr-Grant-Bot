@@ -1,3 +1,6 @@
+const {numWord} = require("./numToWord.js");
+const {pointsSymbol, pointsImage} = require("./points.js");
+
 module.exports = {
     name: "rps",
     description: "Rock Paper Scissors",
@@ -23,7 +26,7 @@ module.exports = {
                     }
                     let embed = new Discord.MessageEmbed(); 
                     embed.setTitle("**Rock 🗿, Paper 📄, Scissors✂️**\n" + message.author.username + " is playing");
-                    embed.setDescription("Wager: "+bet+" points\nPoints:```js\n"+(result[0].points - bet)+"```");
+                    embed.setDescription("Wager: **"+numWord(bet)+"** "+pointsSymbol()+"\nPoints:```yaml\n"+(numWord(result[0].points - bet))+"```");
                     message.channel.send({embeds: [embed]}).then(msg => {
                         msg.react("🗿").catch(error => console.log("Error reacting to a message (rps comamnd)"));
                         msg.react("📄").catch(error => console.log("Error reacting to a message (rps comamnd)"));
@@ -44,17 +47,17 @@ module.exports = {
                             }
                             //Tie
                             if (yourAnswer === rpsAnswer) {
-                            embed.setDescription("Wager: "+bet+" points\nPoints:```js\n"+(result[0].points)+"```\n**It's a Tie!**\n"+rpsArr[yourAnswer]+" vs " + rpsArr[rpsAnswer]);
+                            embed.setDescription("Wager: **"+numWord(bet)+"** "+pointsSymbol()+"\nPoints:```yaml\n"+(numWord(result[0].points))+"```\n**It's a Tie!**\n"+rpsArr[yourAnswer]+" vs " + rpsArr[rpsAnswer]);
                             msg.edit({embeds: [embed]}).catch(error => console.log("Error editing a message (rps comamnd)"));
                             //Bot Wins
                             } else if (yourAnswer === (rpsAnswer - 1 < 0 ? 2 : rpsAnswer - 1)) {
                             con.query("UPDATE points SET points = " + (result[0].points - bet) + " WHERE user = " + message.author.id, (err, result) => { if (err) throw err });
-                            embed.setDescription("Wager: "+bet+" points\nPoints:```js\n"+(result[0].points - bet)+"```\n**You Lost!**\n"+rpsArr[yourAnswer]+" vs " + rpsArr[rpsAnswer]);
+                            embed.setDescription("Wager: **"+numWord(bet)+"** "+pointsSymbol()+"\nPoints:```yaml\n"+(numWord(result[0].points - bet))+"```\n**You Lost!**\n"+rpsArr[yourAnswer]+" vs " + rpsArr[rpsAnswer]);
                             msg.edit({embeds: [embed]}).catch(error => console.log("Error editing a message (rps comamnd)"));
                             //You Win
                             } else if(rpsAnswer === (yourAnswer - 1 < 0 ? 2 : yourAnswer - 1)) {
                             con.query("UPDATE points SET points = " + (result[0].points + bet) + " WHERE user = " + message.author.id, (err, result) => { if (err) throw err });
-                            embed.setDescription("Wager: "+bet+" points\nPoints:```js\n"+(result[0].points + bet)+"```\n**You Won!**\n"+rpsArr[yourAnswer]+" vs " + rpsArr[rpsAnswer]);
+                            embed.setDescription("Wager: **"+numWord(bet)+"** "+pointsSymbol()+"\nPoints:```yaml\n"+(numWord(result[0].points + bet))+"```\n**You Won!**\n"+rpsArr[yourAnswer]+" vs " + rpsArr[rpsAnswer]);
                             msg.edit({embeds: [embed]}).catch(error => console.log("Error editing a message (rps comamnd)"));
                             }
                             setPlayingGame(message.author.id, 0, con);
