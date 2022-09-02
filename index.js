@@ -2,9 +2,10 @@ const Discord = require('discord.js');
 const client = new Discord.Client({
     intents:["GUILDS", "GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS"]
 });
+const cooldown = new Map();
 module.exports = {
     client: client,
-    Discord: Discord
+    Discord: Discord,
 };
 const {prefix, token} = require('./config.json');
 const request = require('request');
@@ -16,11 +17,13 @@ const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith(
 for (const file of commandFiles) {
     const command = require('./commands/' + file);
 
+    cooldown.set(command.name, new Map());
     client.commands.set(command.name, command);
 }
 
 //MYSQL login
 const mysql = require('mysql');
+const roulette = require('./commands/roulette');
 
 var db_info = {
   host: "localhost",
@@ -63,14 +66,8 @@ client.on('messageCreate', message => {
     //Gets the command and puts it trhough a switch
     switch(message.content.substring(0,message.content.indexOf(" ") == -1 ? message.content.length : message.content.indexOf(" "))) {
         case `${prefix}stats`:
-            let colors = ['RED', 'BLUE', 'PURPLE', 'GREEN', 'YELLOW', 'ORANGE'];
-            let embed = new Discord.MessageEmbed()
-            .setTitle(`<:dice5:1013282200604647457> Grant Bot`)
-            .setDescription(`**Guilds**\n${client.guilds.cache.size}`)
-            .setColor(colors[parseInt(Math.random() * colors.length)])
-            .setFooter({text: `Developed by MelonFruit#8222`});
-{            message.channel.send({embeds: [embed]});
-}        break;
+            client.commands.get("botStats").exe(message, Discord, client);
+        break;
         case `${prefix}commands`:
             client.commands.get("commands").exe(message, Discord);
         break;
@@ -128,8 +125,31 @@ client.on('messageCreate', message => {
         case `${prefix}cf`:
             client.commands.get("coinflip").exe(message, Discord, con);
         break;
+        //leaderboard
+        case `${prefix}lb`:
+        case `${prefix}leaderboard`:
+            client.commands.get("leaderboard").exe(message, Discord, con);
+        break;
     }
 });
+
+//Returns true if the user has a cooldown otherwise sets a cooldown and returns false
+function cooldownFunc(command, waitTimeMS, message) {
+    let time = new Date().getTime()
+    if (cooldown.get(command).has(message.author.id)) {
+        let timePassed = time - cooldown.get(command).get(message.author.id);
+        if (timePassed < waitTimeMS) {
+            message.channel.send(`${message.author} you have to wait ${Math.round((waitTimeMS - timePassed)/1000)}s to use this command again`);
+            return true;
+        } else {
+            cooldown.get(command).set(message.author.id, time);
+            return false;
+        }
+    } else {
+        cooldown.get(command).set(message.author.id, time);
+        return false;
+    }
+}
 
 function setPlayingGame(id, set) {
     con.query("UPDATE points SET playing = "+set+" WHERE user = " + id, (err, result) => {
