@@ -157,5 +157,4 @@ function setPlayingGame(id, set) {
     });
 }
 
-
 client.login(token);
