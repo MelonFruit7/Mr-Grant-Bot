@@ -1,5 +1,5 @@
 const {numWord} = require("./numToWord.js");
-const {pointsSymbol, pointsImage} = require("./points.js");
+const {pointsSymbol, pointsImage} = require("./userStats.js");
 
 module.exports = {
     name: "guess",
@@ -12,7 +12,7 @@ module.exports = {
                    setPlayingGame(message.author.id, 1, con);
                    message.reply("Guess a number between 1 - 1000").catch(error => console.log("Error replying to message (guess command)"));
                    let answer = parseInt(Math.random() * 1000) + 1;
-                   guessCommand(answer, message, 4000, con);
+                   guessCommand(answer, message, (4000 * Math.pow(2, Math.floor(result[0].lvl / 3))), con);
 
                 } else {
                     message.reply("You are currently playing").catch(error => console.log("Error replying to message (guess command)"));
@@ -56,7 +56,7 @@ function guessCommand(answer, message, points, con) {
                     let currentPoints = parseInt(result[0].points);
                     con.query("UPDATE points SET points = " + (currentPoints + points) + " WHERE user = " + message.author.id, function(err, result) {
                         if (err) throw err;
-                        message.reply("Congrats you gained " + points + " "+pointsSymbol()+", you now have " + numWord(currentPoints + points) + " "+pointsSymbol()+"").catch(error => console.log("Error replying to message (guess command)"));
+                        message.reply("Congrats you gained " + numWord(points) + " "+pointsSymbol()+", you now have " + numWord(currentPoints + points) + " "+pointsSymbol()+"").catch(error => console.log("Error replying to message (guess command)"));
                     });
               });
 

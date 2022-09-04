@@ -1,5 +1,5 @@
 const {numWord} = require("./numToWord.js");
-const {pointsSymbol, pointsImage} = require("./points.js");
+const {pointsSymbol, pointsImage, xpUpdate} = require("./userStats.js");
 
 module.exports = {
     name: "coinflip",
@@ -12,7 +12,9 @@ module.exports = {
                 return;
             }
             let bet = parseInt(message.content.substring(message.content.indexOf(" ", message.content.indexOf(" ") + 1) + 1));
-            if (message.content.substring(message.content.indexOf(" ", message.content.indexOf(" ") + 1) + 1) == "half") bet = -1337;
+            if (message.content.substring(message.content.indexOf(" ", message.content.indexOf(" ") + 1) + 1) == "half") bet = -1;
+            if (message.content.substring(message.content.indexOf(" ", message.content.indexOf(" ") + 1) + 1) == "all") bet = -1;
+
             if (!isNaN(bet)) {
                 con.query("SELECT * FROM points WHERE user = " + message.author.id, (err, result) => {
                   if (result.length > 0) {
@@ -20,9 +22,10 @@ module.exports = {
                           message.reply("You are currently playing a game").catch(error => console.log("Error replying to a message (cf comamnd)"));
                           return;
                       }
-                      if (bet == -1337) bet = parseInt(result[0].points / 2);
-                      if (bet > result[0].points / 2 || bet <= 0) {
-                          message.reply("Can't bet more than half of your points (or 0 points)").catch(error => console.log("Error replying to a message (cf comamnd)"));
+                      if (message.content.substring(message.content.indexOf(" ", message.content.indexOf(" ") + 1) + 1) == "half") bet = parseInt(result[0].points / 2);
+                      if (message.content.substring(message.content.indexOf(" ", message.content.indexOf(" ") + 1) + 1) == "all") bet = result[0].points;
+                      if (bet > result[0].points || bet <= 0) {
+                          message.reply("Can't bet more points then you have (or 0 points)").catch(error => console.log("Error replying to a message (cf comamnd)"));
                           return;
                       }
                       let botFlip = parseInt(Math.random() * 2) == 0 ? "h" : "t";
@@ -32,6 +35,12 @@ module.exports = {
                       if (coinPick.substring(0,1) == botFlip) {
                         con.query("UPDATE points SET points = " + (result[0].points + bet) + " WHERE user = " + message.author.id);
                         embed.setDescription("\n\n🎉** WINNER **🎉\n\nYou Won: **" + numWord(bet) + "** "+pointsSymbol()+"\nPoints:\n```yaml\n" + numWord(result[0].points + bet) + "```");
+                        if (bet >= parseInt(result[0].points*0.05)) {
+                          xpUpdate(message.author.id, message, bet, con);
+                          embed.setFooter({text: "🎖 Nice you gained xp 🎖"});
+                        } else {
+                          embed.setFooter({text: "🎟 Need to bet 5% or more to earn xp 🎟"});
+                        }
                       } else {
                         con.query("UPDATE points SET points = " + (result[0].points - bet) + " WHERE user = " + message.author.id);
                         embed.setDescription("\n\n🤡** LOSER **🤡\n\nYou Lost: **" + numWord(bet) + "** "+pointsSymbol()+"\nPoints:\n```yaml\n" + numWord(result[0].points - bet) + "```");

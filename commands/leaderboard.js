@@ -1,5 +1,5 @@
 const {numWord} = require("./numToWord.js");
-const {pointsSymbol, pointsImage} = require("./points.js");
+const {pointsSymbol, pointsImage} = require("./userStats.js");
 
 module.exports = {
     name: "leaderboard",

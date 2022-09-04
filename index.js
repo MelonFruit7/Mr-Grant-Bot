@@ -65,7 +65,7 @@ client.on('messageCreate', message => {
 
     //Gets the command and puts it trhough a switch
     switch(message.content.substring(0,message.content.indexOf(" ") == -1 ? message.content.length : message.content.indexOf(" "))) {
-        case `${prefix}stats`:
+        case `${prefix}botStats`:
             client.commands.get("botStats").exe(message, Discord, client);
         break;
         case `${prefix}commands`:
@@ -105,8 +105,8 @@ client.on('messageCreate', message => {
             client.commands.get("guess").exe(message, con);
         break;
         //check your points
-        case `${prefix}points`:
-            client.commands.get("points").exe(message, con);
+        case `${prefix}stats`:
+            client.commands.get("userStats").exe(message, Discord, con);
         break;
         //Multipalyer roulette
         case `${prefix}roulette`:
@@ -130,6 +130,10 @@ client.on('messageCreate', message => {
         case `${prefix}leaderboard`:
             client.commands.get("leaderboard").exe(message, Discord, con);
         break;
+        case `${prefix}hourly`:
+            if (!cooldownFunc("hourly", 60000*60, message)) {
+                client.commands.get("hourly").exe(message, con);
+            }
     }
 });
 
@@ -139,7 +143,9 @@ function cooldownFunc(command, waitTimeMS, message) {
     if (cooldown.get(command).has(message.author.id)) {
         let timePassed = time - cooldown.get(command).get(message.author.id);
         if (timePassed < waitTimeMS) {
-            message.channel.send(`${message.author} you have to wait ${Math.round((waitTimeMS - timePassed)/1000)}s to use this command again`);
+            let waitTimeMin = parseInt((waitTimeMS - timePassed)/1000/60);
+            let waitTimeSec = Math.round((waitTimeMS - timePassed)/1000)%60;
+            message.channel.send(`${message.author} you have to wait ${waitTimeMin} min and ${waitTimeSec}s to use this command again`);
             return true;
         } else {
             cooldown.get(command).set(message.author.id, time);

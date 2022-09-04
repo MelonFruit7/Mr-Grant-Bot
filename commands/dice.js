@@ -1,5 +1,5 @@
 const {numWord} = require("./numToWord.js");
-const {pointsSymbol, pointsImage} = require("./points.js");
+const {pointsSymbol, pointsImage, xpUpdate} = require("./userStats.js");
 
 module.exports = {
     name: "dice",
@@ -7,7 +7,9 @@ module.exports = {
     exe(message, Discord, con) {
      if (message.content.indexOf(" ") != -1) {
       let bet = parseInt(message.content.substring(message.content.indexOf(" ") + 1));
-      if (message.content.substring(message.content.indexOf(" ") + 1) == "half") bet = -1337;
+      if (message.content.substring(message.content.indexOf(" ") + 1) == "half") bet = -1;
+      if (message.content.substring(message.content.indexOf(" ") + 1) == "all") bet = -1;
+
       if (!isNaN(bet)) {
           con.query("SELECT * FROM points WHERE user = " + message.author.id, (err, result) => {
             if (result.length > 0) {
@@ -15,9 +17,11 @@ module.exports = {
                     message.reply("You are currently playing a game").catch(error => console.log("Error replying to a message (dice comamnd)"));
                     return;
                 }
-                if (bet == -1337) bet = parseInt(result[0].points / 2);
-                if (bet > result[0].points / 2 || bet <= 0) {
-                    message.reply("Can't bet more than half of your points (or 0 points)").catch(error => console.log("Error replying to a message (dice comamnd)"));
+                if (message.content.substring(message.content.indexOf(" ") + 1) == "half") bet = parseInt(result[0].points / 2);
+                if (message.content.substring(message.content.indexOf(" ") + 1) == "all") bet = result[0].points;
+                
+                if (bet > result[0].points || bet <= 0) {
+                    message.reply("Can't bet more points then you have (or 0 points)").catch(error => console.log("Error replying to a message (dice comamnd)"));
                     return;
                 }
                 let diceEmoji = ["<:dice1:1013282071503982683>","<:dice2:1013282092559388734>","<:dice3:1013282155230674984>","<:dice4:1013282181424095335>","<:dice5:1013282200604647457>","<:dice6:1013282224818372698>"];
@@ -29,6 +33,12 @@ module.exports = {
                 if (yourDice == parseInt(Math.random() * 6)) {
                     con.query("UPDATE points SET points = " + (result[0].points + bet*5) + " WHERE user = " + message.author.id);
                     embed.setDescription(diceEmoji[yourDice]+"\n\n🎉** WINNER **🎉\n\nYou Won: **" + numWord(bet*5) + "** "+pointsSymbol()+"\nPoints:\n```yaml\n" + (numWord(result[0].points + bet*5)) + "```");
+                    if (bet >= parseInt(result[0].points*0.05)) {
+                        xpUpdate(message.author.id, message, bet*5, con);
+                        embed.setFooter({text: "🎖 Nice you gained xp 🎖"});
+                    } else {
+                        embed.setFooter({text: "🎟 Need to bet 5% or more to earn xp 🎟"});
+                    }
                 } else {
                     con.query("UPDATE points SET points = " + (result[0].points - bet) + " WHERE user = " + message.author.id);
                     embed.setDescription(diceEmoji[yourDice]+"\n\n🤡** LOSER **🤡\n\nYou lost: **" + numWord(bet) + "** "+pointsSymbol()+"\nPoints:\n```yaml\n" + (numWord(result[0].points - bet)) + "```");
