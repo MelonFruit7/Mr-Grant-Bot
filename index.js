@@ -23,7 +23,6 @@ for (const file of commandFiles) {
 
 //MYSQL login
 const mysql = require('mysql');
-const roulette = require('./commands/roulette');
 
 var db_info = {
   host: "localhost",
@@ -162,5 +161,6 @@ function setPlayingGame(id, set) {
         if (err) throw err;
     });
 }
+
 
 client.login(token);
