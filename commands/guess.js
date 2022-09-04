@@ -18,7 +18,7 @@ module.exports = {
                     message.reply("You are currently playing").catch(error => console.log("Error replying to message (guess command)"));
                 }
             } else {
-                con.query("INSERT INTO points (user, points, playing) VALUES (" + message.author.id + ", 0, 1)", function (err, result) { if (err) throw err; });
+                con.query("INSERT INTO points (user, points, xp, lvl, playing) VALUES (" + message.author.id + ", 0, 0, 0, 1)", function (err, result) { if (err) throw err; });
                 message.reply("Guess a number between 1 - 1000").catch(error => console.log("Error replying to message (guess command)"));
                 let answer = parseInt(Math.random() * 1000) + 1;
                 guessCommand(answer, message, 4000, con);
