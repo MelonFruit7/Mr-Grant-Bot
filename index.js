@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 const client = new Discord.Client({
-    intents:["GUILDS", "GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS"]
+    intents:["GUILDS", "GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS", "DIRECT_MESSAGES"]
 });
 const cooldown = new Map();
 module.exports = {
@@ -133,6 +133,9 @@ client.on('messageCreate', message => {
             if (!cooldownFunc("hourly", 60000*60, message)) {
                 client.commands.get("hourly").exe(message, con);
             }
+        break;
+        case `${prefix}battleship`:
+            client.commands.get("battleship").exe(message, Discord, con);
     }
 });
 

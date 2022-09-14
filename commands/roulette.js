@@ -29,7 +29,9 @@ module.exports = {
                         });
                         embed.setColor('PURPLE');
                         message.channel.send({embeds: [embed]}).then(msg => {
-                            setTimeout(() => {msg.delete()}, 4000);
+                            setTimeout(() => {
+                                if (msg.deletable) msg.delete().catch(error => console.log("error deleting a message (roulette command)"));
+                            }, 4000);
                         }).catch();
                     } else {
                         let embed = new Discord.MessageEmbed().setTitle("L + ratio + luck issue")
@@ -71,7 +73,7 @@ client.on('messageReactionAdd', (reaction, user) => {
         text: "Game starts in 30 seconds"
     });
     embed.setColor('PURPLE');
-    reaction.message.edit({embeds: [embed]});
+    reaction.message.edit({embeds: [embed]}).catch(error => console.log("error editing a message (roulette command)"));
    }
   }
 });
