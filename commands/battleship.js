@@ -90,14 +90,14 @@ module.exports = {
 function placementOfShips(user, arr, Discord, con, ships, attempts, user2, arr2, setupStatus) {
     if (attempts == 0) {
         setupStatus.set(user.id, false);
-        if (setupStatus.get(user2.id) == true) user2.send("Opponent Failed to Setup board (game ended)");
-        user.send("Too many accumulated failed attempts at placing a ship (game ended)");
+        if (setupStatus.get(user2.id) == true) user2.send("Opponent Failed to Setup board (game ended)").catch(error => console.log("Error dming a user (battleship comamnd)"));;
+        user.send("Too many accumulated failed attempts at placing a ship (game ended)").catch(error => console.log("Error dming a user (battleship comamnd)"));
         setPlayingGame(user.id, 0, con);
         setPlayingGame(user2.id, 0, con);
         return;
     } 
     if (setupStatus.get(user2.id) == false) {
-        user.send("Your opponent failed to setup their board (game ended)");
+        user.send("Your opponent failed to setup their board (game ended)").catch(error => console.log("Error dming a user (battleship comamnd)"));;
         setPlayingGame(user.id, 0, con);
         setPlayingGame(user2.id, 0, con);
         return;
@@ -137,8 +137,8 @@ function placementOfShips(user, arr, Discord, con, ships, attempts, user2, arr2,
     user.send({embeds: [embed]}).then(msg => {
         if (ships.length == 0) {
             setupStatus.set(user.id, true);
-            user.send("Finished Placing Ships");
-            user2.send("Your opponent has finished placing ships");
+            user.send("Finished Placing Ships").catch(error => console.log("Error dming a user (battleship comamnd)"));
+            user2.send("Your opponent has finished placing ships").catch(error => console.log("Error dming a user (battleship comamnd)"));
             if (setupStatus.get(user2.id) == true) {
                 playBattleship(user2, arr2, user, arr, "", 5, Discord, con);
             }    
@@ -180,20 +180,26 @@ function placementOfShips(user, arr, Discord, con, ships, attempts, user2, arr2,
                         placementOfShips(user, arr, Discord, con, ships.slice(1), attempts, user2, arr2, setupStatus);
                     }
                 } catch(err) {
-                        user.send("Invalid Input try again");
+                        user.send("Invalid Input try again").catch(error => console.log("Error dming a user (battleship comamnd)"));
                         placementOfShips(user, arr, Discord, con, ships, --attempts, user2, arr2, setupStatus);
                 }
             } else {
-                user.send("Invalid Input try again");
+                user.send("Invalid Input try again").catch(error => console.log("Error dming a user (battleship comamnd)"));
                 placementOfShips(user, arr, Discord, con, ships, --attempts, user2, arr2, setupStatus);
             }
         }).catch(() => {
             setupStatus.set(user.id, false);
-            if (setupStatus.get(user2.id) == true) user2.send("Opponent Failed to Setup board (game ended)");
-            user.send("You spent to much time placing your ship (game ended)");
+            if (setupStatus.get(user2.id) == true) user2.send("Opponent Failed to Setup board (game ended)").catch(error => console.log("Error dming a user (battleship comamnd)"));
+            user.send("You spent to much time placing your ship (game ended)").catch(error => console.log("Error dming a user (battleship comamnd)"));
             setPlayingGame(user.id, 0, con);
             setPlayingGame(user2.id, 0, con);
         });
+    }).catch(() => {
+        console.log("Error dming a user (battleship comamnd)");
+        setupStatus.set(user.id, false);
+        if (setupStatus.get(user2.id) == true) user2.send("Opponent Failed to Setup board (game ended)").catch(error => console.log("Error dming a user (battleship comamnd)"));
+        setPlayingGame(user.id, 0, con);
+        setPlayingGame(user2.id, 0, con);
     });
 }
 
@@ -211,8 +217,8 @@ function placementOfShips(user, arr, Discord, con, ships, attempts, user2, arr2,
  */
 function playBattleship(playingUser, playingUserBoard, userTwo, userTwoBoard, prevMove, attempts, Discord, con) {
     if (attempts == 0) {
-        playingUser.send("You failed to attack the opponent (game ended)");
-        userTwo.send("Opponent failed to attack, you win!! (game ended)");
+        playingUser.send("You failed to attack the opponent (game ended)").catch(error => console.log("Error dming a user (battleship comamnd)"));
+        userTwo.send("Opponent failed to attack, you win!! (game ended)").catch(error => console.log("Error dming a user (battleship comamnd)"));
         setPlayingGame(playingUser.id, 0, con);
         setPlayingGame(userTwo.id, 0, con);
         return;
@@ -244,7 +250,7 @@ function playBattleship(playingUser, playingUserBoard, userTwo, userTwoBoard, pr
             {name: "Opponents Board (visible)", value: vUserTwoBoard, inline: true}
         );
         embed.setColor("GREEN");
-        playingUser.send({embeds: [embed]});
+        playingUser.send({embeds: [embed]}).catch(error => console.log("Error dming a user (battleship comamnd)"));
 
         embed2.setTitle("Battleship Game 🛳");
         embed2.addFields(
@@ -252,10 +258,10 @@ function playBattleship(playingUser, playingUserBoard, userTwo, userTwoBoard, pr
             {name: "Opponents Board (Visible)", value: vPlayingUserBoard, inline: true}
         );
         embed2.setColor("GREEN");
-        userTwo.send({embeds: [embed2]});
+        userTwo.send({embeds: [embed2]}).catch(error => console.log("Error dming a user (battleship comamnd)"));
 
-        playingUser.send("🚢 L + ratio + skill issue, you lost 🚢 (game ended)");
-        userTwo.send("🚢🎉 GG you won the battleship match!! 🎉🚢 (game ended)");
+        playingUser.send("🚢 L + ratio + skill issue, you lost 🚢 (game ended)").catch(error => console.log("Error dming a user (battleship comamnd)"));
+        userTwo.send("🚢🎉 GG you won the battleship match!! 🎉🚢 (game ended)").catch(error => console.log("Error dming a user (battleship comamnd)"));
         setPlayingGame(playingUser.id, 0, con);
         setPlayingGame(userTwo.id, 0, con);
         return;
@@ -283,7 +289,7 @@ function playBattleship(playingUser, playingUserBoard, userTwo, userTwoBoard, pr
             {name: "Opponents Board", value: hPlayingUserBoard, inline: true}
         );
         embed2.setColor("RED");
-        userTwo.send({embeds: [embed2]});
+        userTwo.send({embeds: [embed2]}).catch(error => console.log("Error dming a user (battleship comamnd)"));
     }
 
     embed.setTitle("Battleship Game 🛳");
@@ -311,15 +317,20 @@ function playBattleship(playingUser, playingUserBoard, userTwo, userTwoBoard, pr
                 }
                 playBattleship(userTwo, userTwoBoard, playingUser, playingUserBoard, input, 5, Discord, con);
             } else {
-                playingUser.send("Invalid Input try again");
+                playingUser.send("Invalid Input try again").catch(error => console.log("Error dming a user (battleship comamnd)"));
                 playBattleship(playingUser, playingUserBoard, userTwo, userTwoBoard, "", --attempts, Discord, con);
             }
         }).catch(() => {
-            playingUser.send("You spent to much time choosing a place to attack (game ended)");
-            userTwo.send("Opponent timed out, you win!! (game ended)");
+            playingUser.send("You spent to much time choosing a place to attack (game ended)").catch(error => console.log("Error dming a user (battleship comamnd)"));
+            userTwo.send("Opponent timed out, you win!! (game ended)").catch(error => console.log("Error dming a user (battleship comamnd)"));
             setPlayingGame(playingUser.id, 0, con);
             setPlayingGame(userTwo.id, 0, con);
         });
+    }).catch(() => {
+        console.log("Error dming a user (battleship comamnd)");
+        userTwo.send("Opponent most likely has direct messages closed (game ended)").catch(error => console.log("Error dming a user (battleship comamnd)"));
+        setPlayingGame(playingUser.id, 0, con);
+        setPlayingGame(userTwo.id, 0, con);
     });
 
 }
