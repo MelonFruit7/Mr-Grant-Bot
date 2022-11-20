@@ -3,8 +3,8 @@ const {pointsSymbol, pointsImage, xpUpdate} = require("./userStats.js");
 
 module.exports = {
     name: "dice",
-    descirption: "roll dice",
-    exe(message, Discord, con) {
+    descirption: "Roll a 6 to win",
+    exe(message, Discord, con, playingMap) {
      if (message.content.indexOf(" ") != -1) {
       let bet = parseInt(message.content.substring(message.content.indexOf(" ") + 1));
       if (message.content.substring(message.content.indexOf(" ") + 1) == "half") bet = -1;
@@ -13,7 +13,7 @@ module.exports = {
       if (!isNaN(bet)) {
           con.query("SELECT * FROM points WHERE user = " + message.author.id, (err, result) => {
             if (result.length > 0) {
-                if (result[0].playing == 1) {
+                if (playingMap.has(message.author.id)) {
                     message.reply("You are currently playing a game").catch(error => console.log("Error replying to a message (dice comamnd)"));
                     return;
                 }
@@ -30,7 +30,7 @@ module.exports = {
                 embed.setTitle("Dice\n" + message.author.username);
                 embed.setThumbnail(pointsImage());
                 embed.setColor("PURPLE");
-                if (yourDice == parseInt(Math.random() * 6)) {
+                if (yourDice == 5) {
                     con.query("UPDATE points SET points = " + (result[0].points + bet*5) + " WHERE user = " + message.author.id);
                     embed.setDescription(diceEmoji[yourDice]+"\n\n🎉** WINNER **🎉\n\nYou Won: **" + numWord(bet*5) + "** "+pointsSymbol()+"\nPoints:\n```yaml\n" + (numWord(result[0].points + bet*5)) + "```");
                     if (bet >= parseInt(result[0].points*0.05)) {

@@ -18,14 +18,18 @@ module.exports = {
                 }
                 if (message.author.id == result[i].user) {
                     let ext = "";
-                    switch((i + 1) % 10) {
-                        case 1: ext += "st";
-                        break;
-                        case 2: ext += "nd";
-                        break;
-                        case 3: ext += "rd";
-                        break;
-                        default: ext += "th";
+                    if (i % 100 > 10 && i % 100 < 20) {
+                        ext += "th";
+                    } else {
+                        switch((i + 1) % 10) {
+                            case 1: ext += "st";
+                            break;
+                            case 2: ext += "nd";
+                            break;
+                            case 3: ext += "rd";
+                            break;
+                            default: ext += "th";
+                        }
                     }
                     userPlacement += `You are ${i + 1}${ext} with ${numWord(result[i].points)} points`;
                 }

@@ -8,7 +8,7 @@ module.exports = {
         con.query("SELECT * FROM points WHERE user = " + message.author.id, (err, result) => {
             if (err) throw err;
             if (result.length < 1) {
-                con.query("INSERT INTO points (user, points, xp, lvl, playing) VALUES (" + message.author.id + ", 50, 0, 0, 0)", function (err, result) { if (err) throw err; });
+                con.query("INSERT INTO points (user, points, xp, lvl) VALUES (" + message.author.id + ", 50, 0, 0)", function (err, result) { if (err) throw err; });
                 message.reply("You were given " + 50 + " " + pointsSymbol() + ", enjoy playing :)").catch(error => console.log("Error replying to a message (hourly comamnd)"));
                 return;
             }

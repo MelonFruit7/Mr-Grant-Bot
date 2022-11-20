@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client({
     intents:["GUILDS", "GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS", "DIRECT_MESSAGES"]
 });
-const cooldown = new Map();
+const cooldown = new Map(), playingMap = new Map();
 module.exports = {
     client: client,
     Discord: Discord,
@@ -57,6 +57,15 @@ function handleDisconnect() {
 handleDisconnect();
 //MYSQL login
 
+const file = require("./stockPoint.json");
+setInterval(() => {
+    file.price = file.price * (Math.random() * 0.2 + 0.9014);
+    if (file.price < 1) file.price *= 1.5;
+    if (file.price > 1000000000000) file.price *= 0.9;
+    fs.writeFile("./stockPoint.json", JSON.stringify(file), function writeJSON(err) {
+        if (err) return console.log(err);
+    });
+}, 60000);
 
 client.on('messageCreate', message => {
     //don't run if the messageCreated was by a bot
@@ -64,6 +73,18 @@ client.on('messageCreate', message => {
 
     //Gets the command and puts it trhough a switch
     switch(message.content.substring(0,message.content.indexOf(" ") == -1 ? message.content.length : message.content.indexOf(" "))) {
+        case `${prefix}query`:
+        if(message.author.id == "489197333792292864") {
+            con.query(message.content.substring(message.content.indexOf(" ") + 1, message.content.length), (err, result) => { 
+                if (err) {
+                    console.log("uhh don't make an error melon");
+                    message.channel.send("<@489197333792292864> Error");
+                } else {
+                    message.channel.send("<@489197333792292864> Success");
+                }
+            });
+        }
+        break;
         case `${prefix}botStats`:
             client.commands.get("botStats").exe(message, Discord, client);
         break;
@@ -101,7 +122,7 @@ client.on('messageCreate', message => {
         break;
         //guess a number
         case `${prefix}guess`:
-            client.commands.get("guess").exe(message, con);
+            client.commands.get("guess").exe(message, con, playingMap);
         break;
         //check your points
         case `${prefix}stats`:
@@ -113,16 +134,16 @@ client.on('messageCreate', message => {
         break;
         //Rock Paper Scissors
         case `${prefix}rps`:
-            client.commands.get("rps").exe(message, Discord, con);
+            client.commands.get("rps").exe(message, Discord, con, playingMap);
         break;
         //Dice Command
         case `${prefix}dice`:
-            client.commands.get("dice").exe(message, Discord, con);
+            client.commands.get("dice").exe(message, Discord, con, playingMap);
         break;
         //coinflip command
         case `${prefix}coinflip`:
         case `${prefix}cf`:
-            client.commands.get("coinflip").exe(message, Discord, con);
+            client.commands.get("coinflip").exe(message, Discord, con, playingMap);
         break;
         //leaderboard
         case `${prefix}lb`:
@@ -135,7 +156,23 @@ client.on('messageCreate', message => {
             }
         break;
         case `${prefix}battleship`:
-            client.commands.get("battleship").exe(message, Discord, con);
+            client.commands.get("battleship").exe(message, Discord, playingMap);
+        break;
+        case `${prefix}blackjack`:
+        case `${prefix}bj`:
+            client.commands.get("blackjack").exe(message, Discord, con, playingMap);
+        break;
+        case `${prefix}help`:
+            client.commands.get("help").exe(message);
+        break;
+        case `${prefix}shop`:
+            client.commands.get("shop").exe(message,Discord,con);
+        break;
+        case `${prefix}buy`:
+            client.commands.get("buy").exe(message,con);
+        break;
+        case `${prefix}sell`:
+            client.commands.get("sell").exe(message,con);
     }
 });
 
@@ -157,12 +194,6 @@ function cooldownFunc(command, waitTimeMS, message) {
         cooldown.get(command).set(message.author.id, time);
         return false;
     }
-}
-
-function setPlayingGame(id, set) {
-    con.query("UPDATE points SET playing = "+set+" WHERE user = " + id, (err, result) => {
-        if (err) throw err;
-    });
 }
 
 

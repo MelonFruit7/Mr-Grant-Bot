@@ -4,7 +4,7 @@ const {pointsSymbol, pointsImage, xpUpdate} = require("./userStats.js");
 module.exports = {
     name: "rps",
     description: "Rock Paper Scissors",
-    exe(message, Discord, con) {
+    exe(message, Discord, con, playingMap) {
         let rpsArr = ["🗿", "📄", "✂️"];
          if (message.content.indexOf(" ") != -1) {
             let bet = parseInt(message.content.substring(message.content.indexOf(" ") + 1));
@@ -14,16 +14,16 @@ module.exports = {
               con.query("SELECT * FROM points WHERE user = " + message.author.id, (err, result) => {
                 if (err) throw err;
                 if (result.length > 0) {
-                    if (result[0].playing == 1) {
+                    if (playingMap.has(message.author.id)) {
                         message.reply("You are currently playing a game").catch(error => console.log("Error replying to a message (rps comamnd)"));
                         return;
                     }
                     if (message.content.substring(message.content.indexOf(" ") + 1) == "half") bet = parseInt(result[0].points / 2);
                     if (message.content.substring(message.content.indexOf(" ") + 1) == "all") bet = result[0].points;
 
-                    setPlayingGame(message.author.id, 1, con);
+                    playingMap.set(message.author.id, 1);
                     if (bet > result[0].points || bet <= 0) {
-                        setPlayingGame(message.author.id, 0, con);
+                        playingMap.delete(message.author.id);
                         message.reply("Can't bet more points then you have (or 0 points)").catch(error => console.log("Error replying to a message (rps comamnd)"));
                         return;
                     }
@@ -69,9 +69,9 @@ module.exports = {
                             }
                             msg.edit({embeds: [embed]}).catch(error => console.log("Error editing a message (rps comamnd)"));
                             }
-                            setPlayingGame(message.author.id, 0, con);
+                            playingMap.delete(message.author.id);
                         }).catch(() => {
-                            setPlayingGame(message.author.id, 0, con);
+                            playingMap.delete(message.author.id);
                             message.reply("Bro can't even play rock paper scissors (you ran out of time)").catch(error => console.log("Error replying to a message (rps comamnd)"));
                         });
                     });
@@ -86,10 +86,4 @@ module.exports = {
             message.reply("Bet some of your points").catch(error => console.log("Error replying to a message (rps comamnd)"));
          }
     }
-}
-
-function setPlayingGame(id, set, con) {
-    con.query("UPDATE points SET playing = "+set+" WHERE user = " + id, (err, result) => {
-        if (err) throw err;
-    });
 }

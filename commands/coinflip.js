@@ -4,7 +4,7 @@ const {pointsSymbol, pointsImage, xpUpdate} = require("./userStats.js");
 module.exports = {
     name: "coinflip",
     descirption: "flip a coin",
-    exe(message, Discord, con) {
+    exe(message, Discord, con, playingMap) {
         if (message.content.indexOf(" ", message.content.indexOf(" ") + 1) != -1) {
             let coinPick = message.content.substring(message.content.indexOf(" ") + 1, message.content.indexOf(" ", message.content.indexOf(" ") + 1)).toLowerCase();
             if (coinPick != "t" && coinPick != "h" && coinPick != "heads" && coinPick != "tails") {
@@ -18,7 +18,7 @@ module.exports = {
             if (!isNaN(bet)) {
                 con.query("SELECT * FROM points WHERE user = " + message.author.id, (err, result) => {
                   if (result.length > 0) {
-                      if (result[0].playing == 1) {
+                      if (playingMap.has(message.author.id)) {
                           message.reply("You are currently playing a game").catch(error => console.log("Error replying to a message (cf comamnd)"));
                           return;
                       }
@@ -57,10 +57,4 @@ module.exports = {
               message.reply("You forgot something, *cf {side of coin} {wager}").catch(error => console.log("Error replying to a message (cf comamnd)"));
            } 
     }
-}
-        
-function setPlayingGame(id, set, con) {
-    con.query("UPDATE points SET playing = "+set+" WHERE user = " + id, (err, result) => {
-        if (err) throw err;
-    });
 }
