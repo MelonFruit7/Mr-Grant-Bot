@@ -18,7 +18,7 @@ module.exports = {
                 }
                 if (message.author.id == result[i].user) {
                     let ext = "";
-                    if (i % 100 > 10 && i % 100 < 20) {
+                    if ((i+1) % 100 > 10 && (i+1) % 100 < 20) {
                         ext += "th";
                     } else {
                         switch((i + 1) % 10) {
