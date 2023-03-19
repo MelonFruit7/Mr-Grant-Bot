@@ -61,7 +61,7 @@ const file = require("./stockPoint.json");
 setInterval(() => {
     file.price = file.price * (Math.random() * 0.2 + 0.9014);
     if (file.price < 1) file.price *= 1.5;
-    if (file.price > 1000000000000) file.price *= 0.9;
+    if (file.price > 1000000000) file.price *= 0.9;
     fs.writeFile("./stockPoint.json", JSON.stringify(file), function writeJSON(err) {
         if (err) return console.log(err);
     });
