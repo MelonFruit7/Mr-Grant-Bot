@@ -27,7 +27,7 @@ const mysql = require('mysql');
 var db_info = {
   host: "localhost",
   user: "root",
-  password: "%Melon123%", //Not a secret :)
+  password: "", //Not a secret :)
   database: "sys"
 };
 var con;
