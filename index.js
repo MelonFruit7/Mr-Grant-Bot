@@ -3,23 +3,39 @@ const client = new Discord.Client({
     intents:["GUILDS", "GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS", "DIRECT_MESSAGES"]
 });
 const cooldown = new Map(), playingMap = new Map();
+let commandTracker = new Map([]);
+
 module.exports = {
     client: client,
     Discord: Discord,
 };
-const {prefix, token} = require('./config.json');
-const request = require('request');
+const { token } = require('./config.json');
+const request = require('@cypress/request');
 
 
 const fs = require('fs');
 client.commands = new Discord.Collection();
 const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
-for (const file of commandFiles) {
-    const command = require('./commands/' + file);
+client.once('ready', async () => {
+  //client.application.commands.set([]); //This gets rid of slash commands
+  //await client.application.commands.create({name: "query", description: "Query the database", options: [{type: "STRING", name: "query", description: "Query parameter", required: true}]}); //Makes the query command for me
+  //await client.application.commands.create({name: "play", description: "Command for game inputs", options: [{type: "STRING", name: "input", description: "Game Input", required: true}]}); //Makes the play command for me
 
-    cooldown.set(command.name, new Map());
-    client.commands.set(command.name, command);
-}
+	for (const file of commandFiles) { //Makes slash commands for all commands
+	  const command = require('./commands/' + file); 
+		cooldown.set(command.name, new Map()); //Cooldown map for the command
+    commandTracker.set(command.name, 0); //Tracks the use of commands
+		client.commands.set(command.name, command); //A map to access our commands
+
+    /*
+		await client.application.commands.create({ //Initialize slash commands
+	    		name: command.name,
+	    		description: command.description,
+          options: command.options
+		});
+    */
+	}
+});
 
 //MYSQL login
 const mysql = require('mysql');
@@ -30,8 +46,8 @@ var db_info = {
   password: "", //Not a secret :)
   database: "sys"
 };
-var con;
 
+var con;
 function handleDisconnect() {
     con = mysql.createConnection(db_info); 
                                                    
@@ -58,140 +74,163 @@ handleDisconnect();
 //MYSQL login
 
 const file = require("./stockPoint.json");
+
 setInterval(() => {
     file.price = file.price * (Math.random() * 0.2 + 0.9014);
     if (file.price < 1) file.price *= 1.5;
-    if (file.price > 1000000000) file.price *= 0.9;
+    if (file.price > 100000000) file.price *= 0.9;
     fs.writeFile("./stockPoint.json", JSON.stringify(file), function writeJSON(err) {
         if (err) return console.log(err);
     });
 }, 60000);
 
-client.on('messageCreate', message => {
-    //don't run if the messageCreated was by a bot
-    if (message.author.bot) return;
+
+client.on('interactionCreate', interaction => {
+    if (!interaction.isCommand()) return;
+    
+    const { commandName } = interaction;
 
     //Gets the command and puts it trhough a switch
-    switch(message.content.substring(0,message.content.indexOf(" ") == -1 ? message.content.length : message.content.indexOf(" "))) {
-        case `${prefix}query`:
-        if(message.author.id == "489197333792292864") {
-            con.query(message.content.substring(message.content.indexOf(" ") + 1, message.content.length), (err, result) => { 
-                if (err) {
-                    console.log("uhh don't make an error melon");
-                    message.channel.send("<@489197333792292864> Error");
-                } else {
-                    message.channel.send("<@489197333792292864> Success");
-                }
+    switch (commandName) {
+      case "query":
+        if(interaction.user.id == "489197333792292864") {
+          if (interaction.options.get("query").value == "stats") {
+            let embed = new Discord.MessageEmbed();
+            embed.setTitle("Bot Command Usage");
+            embed.setColor("AQUA");
+            let desc = "";
+            commandTracker = new Map([...commandTracker.entries()].sort((a, b) => b[1] - a[1])); //Sort the command tracker
+            commandTracker.forEach(function(value, key) {
+              desc += `${key.toUpperCase()}: ${value}\n`;
             });
+            embed.setDescription(desc);
+            interaction.reply({embeds: [embed]});
+          } else {
+            con.query(interaction.options.get("query").value, (err, result) => { 
+              if (err) {
+                console.log("uhh don't make an error melon");
+                interaction.reply("<@489197333792292864> Error");
+              } else {
+                interaction.reply("<@489197333792292864> Success");
+              }
+            });
+          }
         }
         break;
-        case `${prefix}botStats`:
-            client.commands.get("botStats").exe(message, Discord, client);
+    	case "bot_stats":
+    		client.commands.get("bot_stats").exe(interaction, Discord, client);
+        commandTracker.set("bot_stats", commandTracker.get("bot_stats")+1);
         break;
-        case `${prefix}commands`:
-            client.commands.get("commands").exe(message, Discord);
+      case "commands":
+        client.commands.get("commands").exe(interaction, Discord, con, playingMap);
+        commandTracker.set("commands", commandTracker.get("commands")+1);
         break;
-        //SAY COMMAND
-        case `${prefix}say`:
-            client.commands.get("say").exe(message);
+      case "say":
+        client.commands.get("say").exe(interaction);
+        commandTracker.set("say", commandTracker.get("say")+1);
         break;
-        //PING COMMAND
-        case `${prefix}ping`:
-            client.commands.get("ping").exe(message, client);
+      case "ping":
+        client.commands.get("ping").exe(interaction, client);
+        commandTracker.set("ping", commandTracker.get("ping")+1);
         break;
-        //HANDS COMMAND
-        case `${prefix}hands`:
-            client.commands.get("hands").exe(message);
+      case "hands":
+        client.commands.get("hands").exe(interaction);
+        commandTracker.set("hands", commandTracker.get("hands")+1);
         break;
-        //Number to Word notation 
-        case `${prefix}ntw`:
-        case `${prefix}numToWord`:
-            client.commands.get("numToWord").exe(message, Discord);
+      case "num_to_word":
+        client.commands.get("num_to_word").exe(interaction, Discord);
+        commandTracker.set("num_to_word", commandTracker.get("num_to_word")+1);
         break;
-        //Define a word
-        case `${prefix}define`:
-            client.commands.get("define").exe(message, request);
+      case "define":
+        client.commands.get("define").exe(interaction, request);
+        commandTracker.set("define", commandTracker.get("define")+1);
         break;
-        //Urabn Define a word
-        case `${prefix}udefine`:
-            client.commands.get("udefine").exe(message, request);
+      case "udefine":
+        client.commands.get("udefine").exe(interaction, request);
+        commandTracker.set("udefine", commandTracker.get("udefine")+1);
         break;
-        //Cbowl
-        case `${prefix}cbowl`:
-            client.commands.get("cbowl").exe(message);
+      case "cbowl":
+        client.commands.get("cbowl").exe(interaction);
+        commandTracker.set("cbowl", commandTracker.get("cbowl")+1);
         break;
-        //guess a number
-        case `${prefix}guess`:
-            client.commands.get("guess").exe(message, con, playingMap);
+      case "guess":
+        client.commands.get("guess").exe(interaction, con, playingMap, client);
+        commandTracker.set("guess", commandTracker.get("guess")+1);
         break;
-        //check your points
-        case `${prefix}stats`:
-            client.commands.get("userStats").exe(message, Discord, con);
+      case "stats":
+        client.commands.get("stats").exe(interaction, Discord, con, client);
+        commandTracker.set("stats", commandTracker.get("stats")+1);
         break;
-        //Multipalyer roulette
-        case `${prefix}roulette`:
-            client.commands.get("roulette").exe(message, Discord);
+      case "roulette":
+        client.commands.get("roulette").exe(interaction, Discord);
+        commandTracker.set("roulette", commandTracker.get("roulette")+1);
         break;
-        //Rock Paper Scissors
-        case `${prefix}rps`:
-            client.commands.get("rps").exe(message, Discord, con, playingMap);
+      case "rps":
+        client.commands.get("rps").exe(interaction, Discord, con, playingMap);
+        commandTracker.set("rps", commandTracker.get("rps")+1);
         break;
-        //Dice Command
-        case `${prefix}dice`:
-            client.commands.get("dice").exe(message, Discord, con, playingMap);
+      case "dice":
+        client.commands.get("dice").exe(interaction, Discord, con, playingMap);
+        commandTracker.set("dice", commandTracker.get("dice")+1);
         break;
-        //coinflip command
-        case `${prefix}coinflip`:
-        case `${prefix}cf`:
-            client.commands.get("coinflip").exe(message, Discord, con, playingMap);
+      case "coinflip":
+        client.commands.get("coinflip").exe(interaction, Discord, con, playingMap);
+        commandTracker.set("coinflip", commandTracker.get("coinflip")+1);
         break;
-        //leaderboard
-        case `${prefix}lb`:
-        case `${prefix}leaderboard`:
-            client.commands.get("leaderboard").exe(message, Discord, con);
+      case "leaderboard":
+        client.commands.get("leaderboard").exe(interaction, Discord, con, client);
+        commandTracker.set("leaderboard", commandTracker.get("leaderboard")+1);
         break;
-        case `${prefix}hourly`:
-            if (!cooldownFunc("hourly", 60000*60, message)) {
-                client.commands.get("hourly").exe(message, con);
-            }
+      case "hourly":
+        if (!cooldownFunc("hourly", 60000*60, interaction)) client.commands.get("hourly").exe(interaction, con);
+        commandTracker.set("hourly", commandTracker.get("hourly")+1); //I want data regardless of cooldown
         break;
-        case `${prefix}battleship`:
-            client.commands.get("battleship").exe(message, Discord, playingMap);
+      case "battleship":
+        client.commands.get("battleship").exe(interaction, Discord, playingMap);
+        commandTracker.set("battleship", commandTracker.get("battleship")+1);
         break;
-        case `${prefix}blackjack`:
-        case `${prefix}bj`:
-            client.commands.get("blackjack").exe(message, Discord, con, playingMap);
+      case "blackjack":
+        client.commands.get("blackjack").exe(interaction, Discord, con, playingMap);
+        commandTracker.set("blackjack", commandTracker.get("blackjack")+1);
         break;
-        case `${prefix}help`:
-            client.commands.get("help").exe(message);
+      case "help":
+        client.commands.get("help").exe(interaction);
+        commandTracker.set("help", commandTracker.get("help")+1);
         break;
-        case `${prefix}shop`:
-            client.commands.get("shop").exe(message,Discord,con);
+      case "shop":
+        client.commands.get("shop").exe(interaction,Discord,con);
+        commandTracker.set("shop", commandTracker.get("shop")+1);
         break;
-        case `${prefix}buy`:
-            client.commands.get("buy").exe(message,con);
+      case "buy":
+        client.commands.get("buy").exe(interaction,con);
+        commandTracker.set("buy", commandTracker.get("buy")+1);
         break;
-        case `${prefix}sell`:
-            client.commands.get("sell").exe(message,con);
+      case "sell":
+        client.commands.get("sell").exe(interaction,con);
+        commandTracker.set("sell", commandTracker.get("sell")+1);
+        break;
+      case "lottery":
+        client.commands.get("lottery").exe(interaction,Discord, con, playingMap);
+        commandTracker.set("lottery", commandTracker.get("lottery")+1);
     }
 });
 
 //Returns true if the user has a cooldown otherwise sets a cooldown and returns false
-function cooldownFunc(command, waitTimeMS, message) {
+function cooldownFunc(command, waitTimeMS, interaction) {
     let time = new Date().getTime()
-    if (cooldown.get(command).has(message.author.id)) {
-        let timePassed = time - cooldown.get(command).get(message.author.id);
+    if (cooldown.get(command).has(interaction.user.id)) {
+        let timePassed = time - cooldown.get(command).get(interaction.user.id);
         if (timePassed < waitTimeMS) {
             let waitTimeMin = parseInt((waitTimeMS - timePassed)/1000/60);
             let waitTimeSec = Math.round((waitTimeMS - timePassed)/1000)%60;
-            message.channel.send(`${message.author} you have to wait ${waitTimeMin} min and ${waitTimeSec}s to use this command again`);
+            interaction.reply(`${interaction.user} you have to wait ${waitTimeMin} min and ${waitTimeSec}s to use this command again`);
             return true;
         } else {
-            cooldown.get(command).set(message.author.id, time);
+            cooldown.get(command).set(interaction.user.id, time);
             return false;
         }
     } else {
-        cooldown.get(command).set(message.author.id, time);
+        cooldown.get(command).set(interaction.user.id, time);
         return false;
     }
 }

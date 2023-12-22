@@ -1,12 +1,21 @@
+const { GuildMember } = require("discord.js");
+
 module.exports = {
     name: "say",
     description: "Allows you to speak as the bot",
-    exe(message) {
-        if (message.content.indexOf(" ") != -1 && message.member.permissions.has(['ADMINISTRATOR'])) {
-            if (message.deletable) message.delete().catch(error => console.log("Error deleting a message (say command)"));
-            message.channel.send(message.content.substring(message.content.indexOf(" ") + 1));
+    options: [
+        {
+            type: "STRING",
+            name: "say",
+            description: "Word for bot",
+            required: true
+        }
+    ],
+    exe(interaction) {
+        if (interaction.options.get("say").value.length > 0 && interaction.member.permissions.has(['ADMINISTRATOR'])) {
+            interaction.reply(interaction.options.get("say").value);
         } else { 
-            message.reply("Need Admin To Use").catch(error => console.log("Error replying to a message (say command)"));
+            interaction.reply("Need Admin To Use");
         }
     }
 }

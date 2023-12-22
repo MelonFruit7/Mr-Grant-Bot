@@ -2,15 +2,17 @@ const {client, Discord} = require("../index.js");
 module.exports = {
     name: "roulette",
     description: "Multiplayer game based on luck",
-    exe(message, Discord) {
-        if (!gameMap.has(String(message.guild.id))) {
-            message.channel.send({embeds: [new Discord.MessageEmbed().setTitle("**Roulette**")]}).then(msg => {
-                    gameMap.set(String(message.guild.id), {botMsgId: String(msg.id), arr: [message.author], embedString: ""});
+    exe(interaction, Discord) {
+        if (!gameMap.has(String(interaction.guild.id))) {
+            interaction.deferReply();
+            interaction.deleteReply();
+            interaction.channel.send({embeds: [new Discord.MessageEmbed().setTitle("**Roulette**")]}).then(msg => {
+                    gameMap.set(String(interaction.guild.id), {botMsgId: String(msg.id), arr: [interaction.user], embedString: ""});
                     msg.react('✅').catch(error => console.log("error adding reaction to message (roulette command)")); 
             }).catch();
             setTimeout(() => {
-                message.channel.send("Game Starting");
-                let guildId = message.guild.id;
+                interaction.channel.send("Game Starting");
+                let guildId = interaction.guild.id;
                 gameMap.get(String(guildId)).botMsgId = "";
                 let gameInterval = setInterval(() => {
                     if (gameMap.get(guildId).arr.length > 1) {
@@ -28,7 +30,7 @@ module.exports = {
                             text: "⌛ Next Round Starts In 5 Seconds"
                         });
                         embed.setColor('PURPLE');
-                        message.channel.send({embeds: [embed]}).then(msg => {
+                        interaction.channel.send({embeds: [embed]}).then(msg => {
                             setTimeout(() => {
                                 if (msg.deletable) msg.delete().catch(error => console.log("error deleting a message (roulette command)"));
                             }, 4000);
@@ -39,9 +41,9 @@ module.exports = {
                                                               .setThumbnail(`https://cdn.discordapp.com/avatars/${gameMap.get(guildId).arr[0].id}/${gameMap.get(guildId).arr[0].avatar}.png?size=256`)
                                                               .setColor('RED');
 
-                        message.channel.send({embeds: [embed]}).then(() => {
+                        interaction.channel.send({embeds: [embed]}).then(() => {
                             clearInterval(gameInterval);
-                            gameMap.delete(String(message.guild.id));
+                            gameMap.delete(String(guildId));
                         }).catch();
                     }
                 }, 5000);

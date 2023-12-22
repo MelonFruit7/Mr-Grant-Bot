@@ -1,12 +1,18 @@
 module.exports = {
-    name: "numToWord",
+    name: "num_to_word",
     description: "Notates a large number into its word form",
-    exe(message, Discord) {
-        if (message.content.indexOf(" ") != -1) {
-            let embed = new Discord.MessageEmbed();
-            embed.setDescription(numberNotation(parseInt(message.content.substring(message.content.indexOf(" ") + 1))));
-            message.channel.send({embeds: [embed]});
+    options: [
+        {
+            type: "STRING",
+            name: "number",
+            description: "Number to turn into a word",
+            required: true
         }
+    ],
+    exe(interaction, Discord) {
+        let embed = new Discord.MessageEmbed();
+        embed.setDescription(numberNotation(parseInt(interaction.options.get("number").value)));
+        interaction.reply({embeds: [embed]});
     },
     numWord(number) {
         return numberNotation(number);

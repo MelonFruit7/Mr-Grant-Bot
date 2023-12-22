@@ -1,16 +1,22 @@
 module.exports = {
     name: "define",
     description: "defines a word",
-    exe(message, request) {
-        if (message.content.indexOf(" ") != -1) {
-            request('https://api.dictionaryapi.dev/api/v2/entries/en/' + message.content.substring(message.content.indexOf(" ") + 1), function (error, response, body) {
-             if (!error && response.statusCode == 200) {
-                let importedJSON = JSON.parse(body);
-                message.channel.send(importedJSON[0].meanings[0].definitions[0].definition);
-             } else {
-                message.channel.send("Sorry couldn't find your word");
-             }
-            });
+    options: [
+        {
+            type: "STRING",
+            name: "word",
+            description: "Word from the dictionary",
+            required: true
         }
+    ],
+    exe(interaction, request) {
+        request('https://api.dictionaryapi.dev/api/v2/entries/en/' + interaction.options.get("word").value, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                let importedJSON = JSON.parse(body);
+                interaction.reply(importedJSON[0].meanings[0].definitions[0].definition);
+            } else {
+                interaction.reply("Sorry couldn't find your word");
+            }
+        });
     }
 }

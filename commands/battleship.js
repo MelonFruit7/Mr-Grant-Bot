@@ -1,58 +1,63 @@
 module.exports = {
     name: "battleship",
     description: "1v1 battleship game",
-    exe(message, Discord, playingMap) {
-        if (message.content.indexOf(" ") != -1) {
-            if (message.mentions.users.first() != undefined) {
-                let userOne = message.author, userTwo = message.mentions.users.first();
-
-                let userOneBoard = [], userTwoBoard = [], numEmojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
-                let setupStatus = new Map();
-                setupStatus.set(userOne.id, undefined);
-                setupStatus.set(userTwo.id, undefined);
-                
-                userOneBoard.push(["📍", "🇦","🇧","🇨","🇩","🇪","🇫","🇬","🇭","🇮","🇯"]);
-                userTwoBoard.push(["📍", "🇦","🇧","🇨","🇩","🇪","🇫","🇬","🇭","🇮","🇯"]);
-                for (let i = 0; i < 10; i++) {
-                    userOneBoard.push([numEmojis[i], "⬜","⬜","⬜","⬜","⬜","⬜","⬜","⬜","⬜","⬜"]);
-                    userTwoBoard.push([numEmojis[i], "⬜","⬜","⬜","⬜","⬜","⬜","⬜","⬜","⬜","⬜"]);
-                }
-                if (userOne.id == userTwo.id) {
-                    message.channel.send(`You can't play against yourself ${userOne} ;-;`);
-                    return;
-                }
-                
-                if (playingMap.has(userOne.id)) {
-                    message.channel.send("You are currently playing some game with the bot, finish it first.");
-                    return;
-                }
-                playingMap.set(userOne.id, 1);
-
-                message.channel.send(`React to accept a battleship match against ${userOne}, ${userTwo}`).then(msg => {
-                    msg.react("✅");
-                    let filter = (reaction, user) => { return (reaction.emoji.name == "✅") && user.id == userTwo.id };
-                    msg.awaitReactions({filter: filter, max: 1, time: 30000, errors: ["time"]}).then(x => {
-                      if (playingMap.has(userTwo.id)) {
-                        playingMap.delete(userOne.id);
-                        message.channel.send("The user you mentioned is currently playing some game with the bot, wait until they are finished.");
-                        return;
-                      }
-                      playingMap.set(userTwo.id, 1);
-                      let ships = [4,3,3,2,2,2,1,1,1,1];
-                      //user that is placing, users board, Discord, array of ships, possible failed attempts, other user, other users board, status
-                      placementOfShips(userOne, userOneBoard, Discord, playingMap, ships, ships.length, userTwo, userTwoBoard, setupStatus);
-                      placementOfShips(userTwo, userTwoBoard, Discord, playingMap, ships, ships.length, userOne, userOneBoard, setupStatus); 
-                    }).catch(() => {
-                        playingMap.delete(userOne.id);
-                        message.channel.send(`User did not accept the battleship match ${userOne}`);
-                    });
-                });
-            } else {
-                message.reply("Please mention the person you want to battle").catch(error => console.log("error replying to message (battleship command)"));
-            }
-        } else {
-            message.reply("Please mention the person you want to battle").catch(error => console.log("error replying to message (battleship command)"));
+    options: [
+        {
+            type: "USER",
+            name: "user",
+            description: "User you want to play against",
+            required: true   
         }
+    ],
+    exe(interaction, Discord, playingMap) {
+            let userOne = interaction.user, userTwo = interaction.options.getUser("user");
+
+            let userOneBoard = [], userTwoBoard = [], numEmojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
+            let setupStatus = new Map();
+            setupStatus.set(userOne.id, undefined);
+            setupStatus.set(userTwo.id, undefined);
+                
+            userOneBoard.push(["📍", "🇦","🇧","🇨","🇩","🇪","🇫","🇬","🇭","🇮","🇯"]);
+            userTwoBoard.push(["📍", "🇦","🇧","🇨","🇩","🇪","🇫","🇬","🇭","🇮","🇯"]);
+            for (let i = 0; i < 10; i++) {
+                userOneBoard.push([numEmojis[i], "⬜","⬜","⬜","⬜","⬜","⬜","⬜","⬜","⬜","⬜"]);
+                userTwoBoard.push([numEmojis[i], "⬜","⬜","⬜","⬜","⬜","⬜","⬜","⬜","⬜","⬜"]);
+            }
+            if (userOne.id == userTwo.id) {
+                interaction.reply(`You can't play against yourself ${userOne} ;-;`);
+                return;
+            } else if (userTwo.bot) {
+                interaction.reply("Bots can't play battleship :(");
+                return;
+            }
+                
+            if (playingMap.has(userOne.id)) {
+                interaction.reply("You are currently playing some game with the bot, finish it first.");
+                return;
+            }
+            playingMap.set(userOne.id, 1);
+
+            interaction.deferReply();
+            interaction.deleteReply();
+            interaction.channel.send(`React to accept a battleship match against ${userOne}, ${userTwo}`).then(msg => {
+                msg.react("✅");
+                let filter = (reaction, user) => { return (reaction.emoji.name == "✅") && user.id == userTwo.id };
+                msg.awaitReactions({filter: filter, max: 1, time: 30000, errors: ["time"]}).then(x => {
+                    if (playingMap.has(userTwo.id)) {
+                        playingMap.delete(userOne.id);
+                        interaction.channel.send("The user you mentioned is currently playing some game with the bot, wait until they are finished.");
+                        return;
+                    }
+                    playingMap.set(userTwo.id, 1);
+                    let ships = [4,3,3,2,2,2,1,1,1,1];
+                    //user that is placing, users board, Discord, array of ships, possible failed attempts, other user, other users board, status
+                    placementOfShips(userOne, userOneBoard, Discord, playingMap, ships, ships.length, userTwo, userTwoBoard, setupStatus);
+                    placementOfShips(userTwo, userTwoBoard, Discord, playingMap, ships, ships.length, userOne, userOneBoard, setupStatus); 
+                }).catch(() => {
+                    playingMap.delete(userOne.id);
+                    interaction.channel.send(`User did not accept the battleship match ${userOne}`);
+                });
+            });
     }
 }
 
