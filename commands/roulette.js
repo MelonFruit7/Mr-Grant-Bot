@@ -49,7 +49,7 @@ module.exports = {
                 }, 5000);
             }, 30000);
         } else {
-            message.channel.send("A Game is Currently In progress");
+            interaction.reply("A Game is Currently In progress");
         }
     }
 }

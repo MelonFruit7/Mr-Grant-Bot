@@ -28,6 +28,7 @@ client.once('ready', async () => {
 		client.commands.set(command.name, command); //A map to access our commands
 
     /*
+    console.log(command.name);
 		await client.application.commands.create({ //Initialize slash commands
 	    		name: command.name,
 	    		description: command.description,
@@ -43,7 +44,7 @@ const mysql = require('mysql');
 var db_info = {
   host: "localhost",
   user: "root",
-  password: "", //Not a secret :)
+  password: "%Melon123%", //Not a secret :)
   database: "sys"
 };
 

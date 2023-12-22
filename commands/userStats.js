@@ -71,7 +71,7 @@ module.exports = {
         }
     },
     pointsSymbol() {
-        return "<a:coin:1187593610523320440>";
+        return "<a:GrantCoin:1187594509538824334>";
     },
     pointsImage() {
         return "https://cdn.discordapp.com/attachments/855207922891882506/1187603105915867186/coin.gif?ex=65977c95&is=65850795&hm=9defeeba7fd14ca579eed4bc79502f7ceeb08a2601fbf018ac451e29d56aba74&";
@@ -101,5 +101,5 @@ module.exports = {
 }
 
 function pointsSymbol() {
-    return "<a:coin:1187593610523320440>";
+    return "<a:GrantCoin:1187594509538824334>";
 }
