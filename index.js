@@ -44,7 +44,7 @@ const mysql = require('mysql');
 var db_info = {
   host: "localhost",
   user: "root",
-  password: "%Melon123%", //Not a secret :)
+  password: "", //Not a secret :)
   database: "sys"
 };
 
@@ -89,6 +89,20 @@ setInterval(() => {
 client.on('interactionCreate', interaction => {
     if (!interaction.isCommand()) return;
     
+
+    if (!interaction.guild) {
+      interaction.reply("Sadly all commands are disabled in dms");
+      return;
+    }
+    let requiredPermissions = ["SEND_MESSAGES", "MANAGE_MESSAGES"];
+    let botUser = interaction.guild.members.cache.get(client.user.id).permissionsIn(interaction.channel);
+    for (let i = 0; i < requiredPermissions.length; i++) {
+      if (!botUser.has(requiredPermissions[i])) {
+        interaction.reply("I don't have the required permissions, I need permissions to send messages and manage messages in this channel.");
+        return;
+      }
+    }
+
     const { commandName } = interaction;
 
     //Gets the command and puts it trhough a switch
@@ -213,6 +227,10 @@ client.on('interactionCreate', interaction => {
       case "lottery":
         client.commands.get("lottery").exe(interaction,Discord, con, playingMap);
         commandTracker.set("lottery", commandTracker.get("lottery")+1);
+        break;
+      case "upvote_reward":
+        client.commands.get("upvote_reward").exe(interaction, request, cooldownFunc, cooldown);
+        commandTracker.set("upvote_reward", commandTracker.get("upvote_reward")+1);
     }
 });
 
@@ -224,7 +242,7 @@ function cooldownFunc(command, waitTimeMS, interaction) {
         if (timePassed < waitTimeMS) {
             let waitTimeMin = parseInt((waitTimeMS - timePassed)/1000/60);
             let waitTimeSec = Math.round((waitTimeMS - timePassed)/1000)%60;
-            interaction.reply(`${interaction.user} you have to wait ${waitTimeMin} min and ${waitTimeSec}s to use this command again`);
+            interaction.reply(`${interaction.user} you have to wait ${waitTimeMin} min and ${waitTimeSec}s to use this command again`).catch(error => console.log("Error replying to a message (cooldown function)"));;
             return true;
         } else {
             cooldown.get(command).set(interaction.user.id, time);

@@ -41,7 +41,7 @@ module.exports = {
                     }
                     xpBar += "|";
                     embed.setDescription(`**Prestige Level: ${result[0].badgeLevel} 🐔**\n\n**Points: ${numWord(result[0].points)}** ${pointsSymbol()}\n\n**Stock Points: ${numWord(result[0].stockPoints)} 🐦**\n\n**Level: ${result[0].lvl + 1}**\n**Xp: ${xpBar} ${numWord(result[0].xp)}/${numWord(parseInt(100 * Math.pow(1.5, result[0].lvl)))}**\n\n**Base Guess: ${numWord(4000 * Math.pow(2, Math.floor(result[0].lvl / 3)))} ${pointsSymbol()}**\n\n**Base Hourly: ${numWord(parseInt(50*Math.pow(1.3, result[0].lvl)))} ${pointsSymbol()}**`);
-                    interaction.reply({embeds: [embed]});
+                    interaction.reply({embeds: [embed]}).catch(error => console.log("Error replying to a message (stats comamnd)"));
                 } else {
                     interaction.reply("This user does not have any stats").catch(error => console.log("Error replying to message (stats command)"));
                 }
@@ -63,7 +63,7 @@ module.exports = {
                     }
                     xpBar += "|";
                     embed.setDescription(`**Prestige Level: ${result[0].badgeLevel} 🐔**\n\n**Points: ${numWord(result[0].points)}** ${pointsSymbol()}\n\n**Stock Points: ${numWord(result[0].stockPoints)} 🐦**\n\n**Level: ${result[0].lvl + 1}**\n**Xp: ${xpBar} ${numWord(result[0].xp)}/${numWord(parseInt(100 * Math.pow(1.5, result[0].lvl)))}**\n\n**Base Guess: ${numWord(4000 * Math.pow(2, Math.floor(result[0].lvl / 3)))} ${pointsSymbol()}**\n\n**Base Hourly: ${numWord(parseInt(50*Math.pow(1.3, result[0].lvl)))} ${pointsSymbol()}**`);
-                    interaction.reply({embeds: [embed]});
+                    interaction.reply({embeds: [embed]}).catch(error => console.log("Error replying to a message (stats comamnd)"));
                 } else {
                     interaction.reply("You don't have any stats").catch(error => console.log("Error replying to message (stats command)"));
                 }

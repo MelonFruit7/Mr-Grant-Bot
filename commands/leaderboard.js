@@ -41,7 +41,7 @@ module.exports = {
             } 
             embed.setDescription(topTen);
             embed.setFooter({text: userPlacement});
-            interaction.reply({embeds: [embed]});
+            interaction.reply({embeds: [embed]}).catch(error => console.log("Error replying to a message (leaderboard comamnd)"));
         });
     }
 }

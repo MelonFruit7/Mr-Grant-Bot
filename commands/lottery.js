@@ -23,7 +23,7 @@ module.exports = {
                 bet = getPointsForBet(bet, result[0].points);
                 
                 if (bet > result[0].points || bet <= 0) {
-                    interaction.reply("Can't bet more points then you have (or 0 points)").catch(error => console.log("Error replying to a message (dice comamnd)"));
+                    interaction.reply("Can't bet more points then you have (or 0 points)").catch(error => console.log("Error replying to a message (lottery comamnd)"));
                     return;
                 }
 
@@ -62,9 +62,9 @@ module.exports = {
                         {name: "🤡** LOSER **🤡", value: ("You lost: **" + numWord(bet) + "** "+pointsSymbol()+"\nPoints:\n```yaml\n" + (numWord(result[0].points - bet)) + "```")}
                     );
                 }
-                interaction.reply({embeds: [embed]});
+                interaction.reply({embeds: [embed]}).catch(error => console.log("Error replying to a message (lottery comamnd)"));
             } else { 
-              interaction.reply("You don't have points").catch(error => console.log("Error replying to a message (dice comamnd)"));  
+              interaction.reply("You don't have points").catch(error => console.log("Error replying to a message (lottery comamnd)"));  
             }
         });
     }

@@ -4,14 +4,15 @@ module.exports = {
     description: "Multiplayer game based on luck",
     exe(interaction, Discord) {
         if (!gameMap.has(String(interaction.guild.id))) {
-            interaction.deferReply();
-            interaction.deleteReply();
+            interaction.deferReply().catch(error => console.log("Error defering an interaction (roulette comamnd)"));
+            interaction.deleteReply().catch(error => console.log("Error deleting an interaction (roulette comamnd)"));
             interaction.channel.send({embeds: [new Discord.MessageEmbed().setTitle("**Roulette**")]}).then(msg => {
                     gameMap.set(String(interaction.guild.id), {botMsgId: String(msg.id), arr: [interaction.user], embedString: ""});
                     msg.react('✅').catch(error => console.log("error adding reaction to message (roulette command)")); 
             }).catch();
+            
             setTimeout(() => {
-                interaction.channel.send("Game Starting");
+                interaction.channel.send("Game Starting").catch(error => console.log("Error sending a message (roulette comamnd)"));
                 let guildId = interaction.guild.id;
                 gameMap.get(String(guildId)).botMsgId = "";
                 let gameInterval = setInterval(() => {
@@ -49,7 +50,7 @@ module.exports = {
                 }, 5000);
             }, 30000);
         } else {
-            interaction.reply("A Game is Currently In progress");
+            interaction.reply("A Game is Currently In progress").catch(error => console.log("Error replying to a message (roulette comamnd)"));
         }
     }
 }

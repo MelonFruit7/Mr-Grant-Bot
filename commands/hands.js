@@ -18,6 +18,6 @@ module.exports = {
                      ":raised_hands", ":point_left", ":point_right", ":point_up_2", ":point_up", ":writing_hand"];
         let res = "";
         for (let i = 0; i < numHands; i++) res += hands[parseInt(Math.random() * hands.length)] + (Math.random() > 0.5 ? ":" : `_tone${parseInt((Math.random() * 5) + 1)}:`);
-        interaction.reply(res);              
+        interaction.reply(res).catch(error => console.log("Error replying to a message (hands comamnd)"));    
     }
 }

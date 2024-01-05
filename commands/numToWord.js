@@ -12,7 +12,7 @@ module.exports = {
     exe(interaction, Discord) {
         let embed = new Discord.MessageEmbed();
         embed.setDescription(numberNotation(parseInt(interaction.options.get("number").value)));
-        interaction.reply({embeds: [embed]});
+        interaction.reply({embeds: [embed]}).catch(error => console.log("Error replying to a message (numToWord comamnd)"));
     },
     numWord(number) {
         return numberNotation(number);

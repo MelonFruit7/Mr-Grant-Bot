@@ -45,7 +45,7 @@ module.exports = {
                     con.query("UPDATE points SET points = " + (result[0].points - bet) + " WHERE user = " + interaction.user.id);
                     embed.setDescription(diceEmoji[yourDice]+"\n\n🤡** LOSER **🤡\n\nYou lost: **" + numWord(bet) + "** "+pointsSymbol()+"\nPoints:\n```yaml\n" + (numWord(result[0].points - bet)) + "```");
                 }
-                interaction.reply({embeds: [embed]});
+                interaction.reply({embeds: [embed]}).catch(error => console.log("Error replying to a message (dice comamnd)"));
             } else { 
               interaction.reply("You don't have points").catch(error => console.log("Error replying to a message (dice comamnd)"));  
             }

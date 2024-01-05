@@ -49,13 +49,13 @@ module.exports = {
                 embed.setThumbnail(pointsImage());
                 embed.setColor("WHITE");
 
-                interaction.deferReply();
-                interaction.deleteReply();
+                interaction.deferReply().catch(error => console.log("Error defering an interaction (blackjack comamnd)"));
+                interaction.deleteReply().catch(error => console.log("Error deleting an interaction (blackjack comamnd)"));
                 interaction.channel.send({embeds: [embed]}).then(msg => {
                     msg.react("🎯").catch(error => console.log("Error reacting to a message (blackjack comamnd)"));
                     msg.react("🧍").catch(error => console.log("Error reacting to a message (blackjack comamnd)"));
                     checkReactions(interaction, msg, playingMap, dealerCards, playerCards, cards, embed, bet, con);
-                });
+                }).catch(error => console.log("Error replying to a message (blackjack comamnd)"));
             } else { 
                 interaction.reply("You don't have points").catch(error => console.log("Error replying to a message (blackjack comamnd)"));  
             }
@@ -191,6 +191,6 @@ function checkReactions(interaction, msg, playingMap, dealerCards, playerCards, 
             msg.edit({embeds: [embed]});
          });
          playingMap.delete(interaction.user.id);
-         interaction.channel.send("<@"+interaction.user+"> You ran out of time bozo.").catch(error => console.log("Error replying to a message (blackjack comamnd)"));
+         interaction.channel.send("<@"+interaction.user+"> You ran out of time bozo.").catch(error => console.log("Error sending a message (blackjack comamnd)"));
     });
 }

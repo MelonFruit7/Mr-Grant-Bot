@@ -8,6 +8,6 @@ module.exports = {
         .setDescription(`**Guilds**\n${client.guilds.cache.size}`)
         .setColor(colors[parseInt(Math.random() * colors.length)])
         .setFooter({text: `Developed by MelonFruit#8222`});
-        interaction.reply({embeds: [embed]}); 
+        interaction.reply({embeds: [embed]}).catch(error => console.log("Error replying to a message (botStats comamnd)"));
     }
 }

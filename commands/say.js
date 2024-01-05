@@ -13,9 +13,9 @@ module.exports = {
     ],
     exe(interaction) {
         if (interaction.options.get("say").value.length > 0 && interaction.member.permissions.has(['ADMINISTRATOR'])) {
-            interaction.reply(interaction.options.get("say").value);
+            interaction.reply(interaction.options.get("say").value).catch(error => console.log("Error replying to a message (say comamnd)"));
         } else { 
-            interaction.reply("Need Admin To Use");
+            interaction.reply("Need Admin To Use").catch(error => console.log("Error replying to a message (say comamnd)"));
         }
     }
 }

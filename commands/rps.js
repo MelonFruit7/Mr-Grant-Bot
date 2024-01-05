@@ -33,8 +33,8 @@ module.exports = {
                 let embed = new Discord.MessageEmbed(); 
                 embed.setTitle("**Rock 🗿, Paper 📄, Scissors✂️**\n" + interaction.user.username + " is playing");
                 embed.setDescription("Wager: **"+numWord(bet)+"** "+pointsSymbol()+"\nPoints:```yaml\n"+(numWord(result[0].points - bet))+"```");
-                interaction.deferReply();
-                interaction.deleteReply();
+                interaction.deferReply().catch(error => console.log("Error defering an interaction (rps comamnd)"));
+                interaction.deleteReply().catch(error => console.log("Error deleting an interaction (rps comamnd)"));
                 interaction.channel.send({embeds: [embed]}).then(msg => {
                     msg.react("🗿").catch(error => console.log("Error reacting to a message (rps comamnd)"));
                     msg.react("📄").catch(error => console.log("Error reacting to a message (rps comamnd)"));
